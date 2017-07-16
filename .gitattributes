@@ -1,0 +1,8 @@
+baresip/*      linguist-vendored
+g722/*         linguist-vendored
+gsm/*          linguist-vendored
+portaudio/*    linguist-vendored
+re/*           linguist-vendored
+rem/*          linguist-vendored
+speex/*        linguist-vendored
+webrtc/*       linguist-vendored
