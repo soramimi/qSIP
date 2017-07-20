@@ -17,6 +17,8 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 
+	QString statusText() const;
+	void setStatusText(const QString &text);
 private slots:
 	void on_toolButton_pad_1_clicked();
 

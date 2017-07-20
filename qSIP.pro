@@ -27,7 +27,8 @@ SOURCES += \
     qSIP/SettingsDialog.cpp \
     qSIP/SettingAccountForm.cpp \
     qSIP/AbstractSettingForm.cpp \
-    qSIP/misc.cpp
+    qSIP/misc.cpp \
+    qSIP/StatusLabel.cpp
 
 HEADERS += \
 	qSIP/MainWindow.h \
@@ -39,7 +40,8 @@ HEADERS += \
     qSIP/AbstractSettingForm.h \
     qSIP/misc.h \
     qSIP/main.h \
-    qSIP/Account.h
+    qSIP/Account.h \
+    qSIP/StatusLabel.h
 
 FORMS += \
 	qSIP/MainWindow.ui \

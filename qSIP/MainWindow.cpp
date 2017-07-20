@@ -3,6 +3,7 @@
 
 #include "PhoneThread.h"
 #include "SettingsDialog.h"
+#include "StatusLabel.h"
 
 #include <QDebug>
 #include "memory"
@@ -13,9 +14,10 @@ enum {
 };
 
 struct MainWindow::Private {
+	StatusLabel *status_label;
 	ApplicationSettings appsettings;
 	struct ua *ua = nullptr;
-	std::shared_ptr<PhoneThread> re;
+	std::shared_ptr<PhoneThread> phone;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -24,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent)
 	, m(new Private)
 {
 	ui->setupUi(this);
+	m->status_label = new StatusLabel;
+	ui->statusBar->addWidget(m->status_label);
 
 	SettingsDialog::loadSettings(&m->appsettings);
 
@@ -39,27 +43,44 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
+QString MainWindow::statusText() const
+{
+	return m->status_label->text();
+}
+
+void MainWindow::setStatusText(QString const &text)
+{
+	m->status_label->setText(text);
+}
+
 void MainWindow::unregister()
 {
-	if (m->re) {
+	if (m->phone) {
 		re_cancel();
-		m->re->wait();
+		m->phone->wait();
 	}
-	m->re.reset();
+	m->phone.reset();
 }
 
 void MainWindow::reregister()
 {
 	unregister();
 
-	m->re = std::shared_ptr<PhoneThread>(new PhoneThread);
-	m->re->setAccount(m->appsettings.account);
+	m->phone = std::shared_ptr<PhoneThread>(new PhoneThread);
+	m->phone->setAccount(m->appsettings.account);
 
-	connect(&*m->re, &PhoneThread::incoming, [&](QString const &text){
+	connect(&*m->phone, &PhoneThread::incoming, [&](QString const &text){
 		ui->label_message->setText(text);
+		setStatusText(QString());
 	});
 
-	m->re->start();
+	connect(&*m->phone, &PhoneThread::dtmf_input, [&](QString const &text){
+		QString s = statusText();
+		s += text;
+		setStatusText(s);
+	});
+
+	m->phone->start();
 }
 
 void MainWindow::push(int n)
@@ -141,21 +162,21 @@ void MainWindow::on_toolButton_clear_clicked()
 
 void MainWindow::on_toolButton_call_clicked()
 {
-	if (!m->re) return;
+	if (!m->phone) return;
 	QString text = ui->lineEdit_phone_number->text();
-	m->re->dial(text);
+	m->phone->dial(text);
 }
 
 void MainWindow::on_toolButton_hungup_clicked()
 {
-	if (!m->re) return;
-	m->re->hangup();
+	if (!m->phone) return;
+	m->phone->hangup();
 }
 
 void MainWindow::on_toolButton_answer_clicked()
 {
-	if (!m->re) return;
-	m->re->answer();
+	if (!m->phone) return;
+	m->phone->answer();
 }
 
 void MainWindow::on_action_settings_triggered()

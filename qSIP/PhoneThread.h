@@ -35,6 +35,7 @@ protected:
 	void run();
 signals:
 	void incoming(QString const &from);
+	void dtmf_input(QString const &text);
 };
 
 

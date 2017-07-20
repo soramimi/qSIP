@@ -43,7 +43,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 	switch (ev) {
 	case UA_EVENT_CALL_INCOMING:
 		{
-			QString from = QString::fromLatin1(prm);
+			QString from = prm;
 			if (!from.isEmpty()) {
 				from = tr("Incoming call from") + "\n" + from;
 				emit incoming(from);
@@ -52,6 +52,9 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		break;
 	case UA_EVENT_CALL_CLOSED:
 		emit incoming(QString());
+		break;
+	case UA_EVENT_CALL_DTMF_START:
+		emit dtmf_input(prm);
 		break;
 	}
 }
