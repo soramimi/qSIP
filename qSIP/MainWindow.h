@@ -54,6 +54,8 @@ private slots:
 
 	void on_action_settings_triggered();
 
+	void on_checkBox_hold_clicked();
+
 private:
 	Ui::MainWindow *ui;
 	void push(int n);

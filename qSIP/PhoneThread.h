@@ -29,12 +29,15 @@ public:
 	bool dial(const QString &text);
 	void hangup();
 	void answer();
+	void hold(bool f);
 	void setAccount(SIP::Account const &account);
 	static void init();
 protected:
 	void run();
 signals:
 	void incoming(QString const &from);
+	void closed();
+	void established();
 	void dtmf_input(QString const &text);
 };
 

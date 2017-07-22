@@ -435,6 +435,13 @@
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_hold">
+        <property name="text">
+         <string>Hold</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>

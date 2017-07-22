@@ -72,6 +72,13 @@ void MainWindow::reregister()
 	connect(&*m->phone, &PhoneThread::incoming, [&](QString const &text){
 		ui->label_message->setText(text);
 		setStatusText(QString());
+		ui->checkBox_hold->setChecked(false);
+	});
+
+	connect(&*m->phone, &PhoneThread::closed, [&](){
+		ui->label_message->clear();
+		setStatusText(QString());
+		ui->checkBox_hold->setChecked(false);
 	});
 
 	connect(&*m->phone, &PhoneThread::dtmf_input, [&](QString const &text){
@@ -190,4 +197,12 @@ void MainWindow::on_action_settings_triggered()
 			reregister();
 		}
 	}
+}
+
+void MainWindow::on_checkBox_hold_clicked()
+{
+	if (!m->phone) return;
+	m->phone->answer();
+	bool hold = ui->checkBox_hold->isChecked();
+	m->phone->hold(hold);
 }

@@ -48,10 +48,23 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 				from = tr("Incoming call from") + "\n" + from;
 				emit incoming(from);
 			}
+			{
+				struct play *play = nullptr;
+//				int r = play_file(&play, "d:/mythbusters.wav", 1);
+			}
+		}
+		break;
+	case UA_EVENT_CALL_ESTABLISHED:
+		emit established();
+		{
+			struct audio *a = call_audio(call);
+//			audio_mute(a, true);
+//			struct play *play = nullptr;
+//			play_file(&play, "d:/mythbusters.wav", 1);
 		}
 		break;
 	case UA_EVENT_CALL_CLOSED:
-		emit incoming(QString());
+		emit closed();
 		break;
 	case UA_EVENT_CALL_DTMF_START:
 		emit dtmf_input(prm);
@@ -127,5 +140,13 @@ void PhoneThread::hangup()
 void PhoneThread::answer()
 {
 	ua_answer(m->ua, nullptr, 0, nullptr);
+}
+
+void PhoneThread::hold(bool f)
+{
+	struct call *c = ua_call(m->ua);
+	if (c) {
+		call_hold(c, f);
+	}
 }
 
