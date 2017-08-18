@@ -103,7 +103,8 @@ bool PhoneThread::dial(const QString &text)
 
 	QString url = "sip:%1@%2";
 	url = url.arg(text).arg(makeServerAddress(m->account));
-	ua_connect((struct ua *)m->ua, nullptr, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
+	int r = ua_connect((struct ua *)m->ua, nullptr, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
+	qDebug() << r;
 	return true;
 }
 
