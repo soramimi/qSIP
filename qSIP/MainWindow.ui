@@ -408,7 +408,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="toolButton_hungup">
+         <widget class="QToolButton" name="toolButton_hangup">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>

@@ -39,7 +39,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 	char const *p = call_peername(call);;
 	if (p) peername = p;
 
-	qDebug() << ev;
+//	qDebug() << ev;
 	switch (ev) {
 	case UA_EVENT_CALL_INCOMING:
 		{

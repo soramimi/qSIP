@@ -48,7 +48,7 @@ private slots:
 
 	void on_toolButton_call_clicked();
 
-	void on_toolButton_hungup_clicked();
+	void on_toolButton_hangup_clicked();
 
 	void on_toolButton_answer_clicked();
 
@@ -59,6 +59,7 @@ private slots:
 	void onIncoming(const QString &text);
 	void onClosed();
 	void onDTMF(const QString &text);
+
 private:
 	Ui::MainWindow *ui;
 	void push(int n);

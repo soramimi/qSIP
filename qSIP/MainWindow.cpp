@@ -184,7 +184,7 @@ void MainWindow::on_toolButton_call_clicked()
 	m->phone->dial(text);
 }
 
-void MainWindow::on_toolButton_hungup_clicked()
+void MainWindow::on_toolButton_hangup_clicked()
 {
 	if (!m->phone) return;
 	m->phone->hangup();
@@ -216,3 +216,4 @@ void MainWindow::on_checkBox_hold_clicked()
 	bool hold = ui->checkBox_hold->isChecked();
 	m->phone->hold(hold);
 }
+
