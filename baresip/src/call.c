@@ -127,7 +127,7 @@ static void call_stream_start(struct call *call, bool active)
 
 		if (ac) {
 			err  = audio_encoder_set(call->audio, sc->data,
-						 sc->pt, sc->params);
+						 sc->pt, sc->params, NULL, NULL);
 			if (err) {
 				DEBUG_WARNING("call: start:"
 					" audio_encoder_set error: %m\n", err);
@@ -140,7 +140,7 @@ static void call_stream_start(struct call *call, bool active)
 			}
 
 			if (!err) {
-				err = audio_start(call->audio);
+				err = audio_start(call->audio, NULL, NULL);
 			}
 			if (err) {
 				DEBUG_WARNING("audio stream: %m\n", err);
@@ -288,7 +288,7 @@ static void mnat_handler(int err, uint16_t scode, const char *reason,
 }
 
 
-static int update_media(struct call *call)
+static int update_media(struct call *call, user_filter_fn user1, void *user2)
 {
 	const struct sdp_format *sc;
 	struct le *le;
@@ -317,7 +317,7 @@ static int update_media(struct call *call)
 			err  = audio_decoder_set(call->audio, sc->data,
 						 sc->pt, sc->params);
 			err |= audio_encoder_set(call->audio, sc->data,
-						 sc->pt, sc->params);
+						 sc->pt, sc->params, user1, user2);
 		}
 		else {
 			(void)re_printf("no common audio-codecs..\n");
@@ -721,7 +721,7 @@ int call_progress(struct call *call)
 }
 
 
-int call_answer(struct call *call, uint16_t scode, const char *audio_mod, const char *audio_dev)
+int call_answer(struct call *call, uint16_t scode, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2)
 {
 	struct mbuf *desc;
 	int err;
@@ -742,7 +742,7 @@ int call_answer(struct call *call, uint16_t scode, const char *audio_mod, const 
 
 	if (call->got_offer) {
 
-		err = update_media(call);
+		err = update_media(call, user1, user2);
 		if (err)
 			return err;
 	}
@@ -1014,7 +1014,7 @@ static int sipsess_offer_handler(struct mbuf **descp,
 		if (err)
 			return err;
 
-		err = update_media(call);
+		err = update_media(call, NULL, NULL);
 		if (err)
 			return err;
 	}
@@ -1039,7 +1039,7 @@ static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
 		return err;
 	}
 
-	err = update_media(call);
+	err = update_media(call, NULL, NULL);
 	if (err)
 		return err;
 

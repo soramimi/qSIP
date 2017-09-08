@@ -39,7 +39,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 	char const *p = call_peername(call);;
 	if (p) peername = p;
 
-	qDebug() << ev;
+//	qDebug() << ev;
 	switch (ev) {
 	case UA_EVENT_CALL_INCOMING:
 		{
@@ -104,7 +104,7 @@ bool PhoneThread::dial(const QString &text)
 	QString url = "sip:%1@%2";
 	url = url.arg(text).arg(makeServerAddress(m->account));
 	int r = ua_connect((struct ua *)m->ua, nullptr, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
-	qDebug() << r;
+//	qDebug() << r;
 	return true;
 }
 
@@ -138,9 +138,20 @@ void PhoneThread::hangup()
 	ua_hangup(m->ua, nullptr, 0, nullptr);
 }
 
+void hoge(void *cookie, int16_t *ptr, int len)
+{
+	return;
+	(void)cookie;
+	int i = 0;
+	while (i < len) {
+		ptr[i + 0] = (i & 4) ? 8192 : -8192;
+		i++;
+	}
+}
+
 void PhoneThread::answer()
 {
-	ua_answer(m->ua, nullptr, 0, nullptr);
+	ua_answer(m->ua, nullptr, 0, nullptr, hoge, nullptr);
 }
 
 void PhoneThread::hold(bool f)

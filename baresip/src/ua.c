@@ -308,7 +308,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 			break;
 
 		case ANSWERMODE_AUTO:
-			(void)call_answer(call, 200, "", "");
+			(void)call_answer(call, 200, "", "", NULL, NULL);
 			break;
 
 		case ANSWERMODE_MANUAL:
@@ -793,7 +793,7 @@ void ua_hangup(struct ua *ua, struct call *call,
  *
  * @return 0 if success, otherwise errorcode
  */
-int ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev)
+int ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2)
 {
 	if (!ua)
 		return EINVAL;
@@ -810,7 +810,7 @@ int ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const cha
 
 	ua->play = mem_deref(ua->play);
 
-	return call_answer(call, 200, audio_mod, audio_dev);
+	return call_answer(call, 200, audio_mod, audio_dev, user1, user2);
 }
 
 

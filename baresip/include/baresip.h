@@ -18,6 +18,10 @@ extern "C" {
 #include "baresip_dialog_info_status.h"
 #include "baresip_presence_status.h"
 
+#include <stdint.h>
+
+typedef void (*user_filter_fn)(void *cookie, int16_t *ptr, int len);
+
 /* forward declarations */
 struct sa;
 struct sdp_media;
@@ -318,7 +322,7 @@ const struct ausrc *ausrc_find(const char *name);
 int ausrc_alloc(struct ausrc_st **stp, struct media_ctx **ctx,
 		const char *name,
 		struct ausrc_prm *prm, const char *device,
-		ausrc_read_h *rh, ausrc_error_h *errh, void *arg);
+		ausrc_read_h *rh, ausrc_error_h *errh, void *arg, user_filter_fn user1, void *user2);
 
 
 /*
@@ -512,7 +516,7 @@ int  ua_connect(struct ua *ua, struct call **callp,
 		const char *params, enum vidmode vmode);
 void ua_hangup(struct ua *ua, struct call *call,
 	       uint16_t scode, const char *reason);
-int  ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev);
+int  ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2);
 int  ua_options_send(struct ua *ua, const char *uri,
 		     options_resp_h *resph, void *arg);
 int  ua_sipfd(const struct ua *ua);
