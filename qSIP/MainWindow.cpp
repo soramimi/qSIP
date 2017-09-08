@@ -72,25 +72,32 @@ void MainWindow::reregister()
 	m->phone = std::shared_ptr<PhoneThread>(new PhoneThread);
 	m->phone->setAccount(m->appsettings.account);
 
-	connect(&*m->phone, &PhoneThread::incoming, [&](QString const &text){
-		ui->label_message->setText(text);
-		setStatusText(QString());
-		ui->checkBox_hold->setChecked(false);
-	});
-
-	connect(&*m->phone, &PhoneThread::closed, [&](){
-		ui->label_message->clear();
-		setStatusText(QString());
-		ui->checkBox_hold->setChecked(false);
-	});
-
-	connect(&*m->phone, &PhoneThread::dtmf_input, [&](QString const &text){
-		QString s = statusText();
-		s += text;
-		setStatusText(s);
-	});
+	connect(&*m->phone, SIGNAL(incoming(QString)), this, SLOT(onIncoming(QString)));
+	connect(&*m->phone, SIGNAL(closed()), this, SLOT(onClosed()));
+	connect(&*m->phone, SIGNAL(dtmf_input(QString)), this, SLOT(onDTMF(QString)));
 
 	m->phone->start();
+}
+
+void MainWindow::onIncoming(QString const &text)
+{
+	ui->label_message->setText(text);
+	setStatusText(QString());
+	ui->checkBox_hold->setChecked(false);
+}
+
+void MainWindow::onClosed()
+{
+	ui->label_message->clear();
+	setStatusText(QString());
+	ui->checkBox_hold->setChecked(false);
+}
+
+void MainWindow::onDTMF(QString const &text)
+{
+	QString s = statusText();
+	s += text;
+	setStatusText(s);
 }
 
 void MainWindow::push(int n)
