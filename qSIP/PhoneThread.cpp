@@ -3,10 +3,17 @@
 #include <QDebug>
 
 
+enum class Direction {
+	None,
+	Incoming,
+	Calling,
+};
 
 struct PhoneThread::Private {
+	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
 	SIP::Account account;
+	VoicePtr voice;
 };
 
 PhoneThread::PhoneThread()
@@ -25,6 +32,11 @@ void PhoneThread::setAccount(const SIP::Account &account)
 	m->account = account;
 }
 
+void PhoneThread::setVoice(VoicePtr voice)
+{
+	m->voice = voice;
+}
+
 void PhoneThread::signal_handler(int sig)
 {
 }
@@ -39,7 +51,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 	char const *p = call_peername(call);;
 	if (p) peername = p;
 
-//	qDebug() << ev;
+	qDebug() << ev;
 	switch (ev) {
 	case UA_EVENT_CALL_INCOMING:
 		{
@@ -55,9 +67,17 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		}
 		break;
 	case UA_EVENT_CALL_ESTABLISHED:
-		emit established();
+		switch (m->direction) {
+		case Direction::Incoming:
+			emit incoming_established();
+			break;
+		case Direction::Calling:
+			emit calling_established();
+			break;
+		}
+
 		{
-			struct audio *a = call_audio(call);
+//			struct audio *a = call_audio(call);
 //			audio_mute(a, true);
 //			struct play *play = nullptr;
 //			play_file(&play, "d:/mythbusters.wav", 1);
@@ -65,6 +85,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		break;
 	case UA_EVENT_CALL_CLOSED:
 		emit closed();
+		m->direction = Direction::None;
 		break;
 	case UA_EVENT_CALL_DTMF_START:
 		emit dtmf_input(prm);
@@ -101,6 +122,8 @@ bool PhoneThread::dial(const QString &text)
 		}
 	}
 
+	m->direction = Direction::Calling;
+
 	QString url = "sip:%1@%2";
 	url = url.arg(text).arg(makeServerAddress(m->account));
 	int r = ua_connect((struct ua *)m->ua, nullptr, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
@@ -130,7 +153,7 @@ void PhoneThread::run()
 		r = ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
 		r = ua_reregister((struct ua *)m->ua);
 	}
-	re_main(signal_handler, control_handler);
+	re_main(signal_handler, control_handler, custom_filter_handler, this);
 }
 
 void PhoneThread::hangup()
@@ -138,20 +161,41 @@ void PhoneThread::hangup()
 	ua_hangup(m->ua, nullptr, 0, nullptr);
 }
 
-void hoge(void *cookie, int16_t *ptr, int len)
+void PhoneThread::custom_filter(int16_t *ptr, int len)
 {
-	return;
+	if (m->voice) {
+		int n = m->voice->size;
+		if (m->voice->pos < n) {
+			n -= m->voice->pos;
+			if (n > len) n = len;
+			int16_t const *p = (int16_t const *)(m->voice->ba.data() + m->voice->offset) + m->voice->pos;
+			memcpy(ptr + len - n, p, n * sizeof(int16_t));
+			m->voice->pos += n;
+		}
+	}
+}
+
+void PhoneThread::custom_filter_handler(void *cookie, int16_t *ptr, int len)
+{
+#if 0
 	(void)cookie;
 	int i = 0;
 	while (i < len) {
 		ptr[i + 0] = (i & 4) ? 8192 : -8192;
 		i++;
 	}
+#else
+	PhoneThread *my = reinterpret_cast<PhoneThread *>(cookie);
+	if (my) {
+		my->custom_filter(ptr, len);
+	}
+#endif
 }
 
 void PhoneThread::answer()
 {
-	ua_answer(m->ua, nullptr, 0, nullptr, hoge, nullptr);
+	m->direction = Direction::Incoming;
+	ua_answer(m->ua, nullptr, 0, nullptr, nullptr, nullptr);
 }
 
 void PhoneThread::hold(bool f)

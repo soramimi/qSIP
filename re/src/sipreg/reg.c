@@ -50,11 +50,13 @@ struct sipreg {
 static int request(struct sipreg *reg, bool reset_ls);
 
 
-static void dummy_handler(int err, const struct sip_msg *msg, void *arg)
+static void dummy_handler(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2)
 {
 	(void)err;
 	(void)msg;
 	(void)arg;
+	(void)user1;
+	(void)user2;
 }
 
 
@@ -104,7 +106,7 @@ static void tmr_handler(void *arg)
 	err = request(reg, true);
 	if (err) {
 		tmr_start(&reg->tmr, failwait(++reg->failc), tmr_handler, reg);
-		reg->resph(err, NULL, reg->arg);
+		reg->resph(err, NULL, reg->arg, NULL, NULL);
 	}
 }
 
@@ -118,7 +120,7 @@ static void keepalive_handler(int err, void *arg)
 		return;
 
 	tmr_start(&reg->tmr, failwait(++reg->failc), tmr_handler, reg);
-	reg->resph(err, NULL, reg->arg);
+	reg->resph(err, NULL, reg->arg, NULL, NULL);
 }
 
 
@@ -167,8 +169,10 @@ static bool contact_handler(const struct sip_hdr *hdr,
 }
 
 
-static void response_handler(int err, const struct sip_msg *msg, void *arg)
+static void response_handler(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2)
 {
+	(void)user1;
+	(void)user2;
 	const struct sip_hdr *minexp;
 	struct sipreg *reg = arg;
 
@@ -244,7 +248,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 	}
 	else {
 		tmr_start(&reg->tmr, reg->wait, tmr_handler, reg);
-		reg->resph(err, msg, reg->arg);
+		reg->resph(err, msg, reg->arg, NULL, NULL);
 	}
 }
 

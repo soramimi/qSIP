@@ -20,8 +20,10 @@
 static int info_request(struct sipsess_request *req);
 
 
-static void info_resp_handler(int err, const struct sip_msg *msg, void *arg)
+static void info_resp_handler(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2)
 {
+	(void)user1;
+	(void)user2;
 	struct sipsess_request *req = arg;
 
 	if (err || sip_request_loops(&req->ls, msg->scode))
@@ -65,7 +67,7 @@ static void info_resp_handler(int err, const struct sip_msg *msg, void *arg)
 		if (err == ETIMEDOUT)
 			sipsess_terminate(req->sess, err, NULL);
 		else
-			req->resph(err, msg, req->arg);
+			req->resph(err, msg, req->arg, NULL, NULL);
 	}
 
 	mem_deref(req);

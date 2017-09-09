@@ -5,10 +5,19 @@
 #include <re.h>
 #include "baresip.h"
 #include "Account.h"
+#include "memory"
 
 #ifdef bool
 #undef bool
 #endif
+
+struct Voice {
+	QByteArray ba;
+	int offset = 0;
+	int size = 0;
+	int pos = 0;
+};
+typedef std::shared_ptr<Voice> VoicePtr;
 
 class PhoneThread : public QThread {
 	Q_OBJECT
@@ -22,6 +31,8 @@ private:
 
 	static void event_handler(struct ua *ua, enum ua_event ev, struct call *call, const char *prm, void *arg);
 
+	static void custom_filter_handler(void *cookie, int16_t *ptr, int len);
+	void custom_filter(int16_t *ptr, int len);
 public:
 	PhoneThread();
 	~PhoneThread();
@@ -31,13 +42,17 @@ public:
 	void answer();
 	void hold(bool f);
 	void setAccount(SIP::Account const &account);
+
+	void setVoice(VoicePtr voice);
+
 	static void init();
 protected:
 	void run();
 signals:
 	void incoming(QString const &from);
 	void closed();
-	void established();
+	void incoming_established();
+	void calling_established();
 	void dtmf_input(QString const &text);
 };
 

@@ -1024,7 +1024,7 @@ static int sipsess_offer_handler(struct mbuf **descp,
 }
 
 
-static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
+static int sipsess_answer_handler(const struct sip_msg *msg, void *arg, void *user1, void *user2)
 {
 	struct call *call = arg;
 	int err;
@@ -1039,7 +1039,7 @@ static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
 		return err;
 	}
 
-	err = update_media(call, NULL, NULL);
+	err = update_media(call, (user_filter_fn)user1, user2);
 	if (err)
 		return err;
 

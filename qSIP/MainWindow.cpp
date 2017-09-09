@@ -73,6 +73,7 @@ void MainWindow::reregister()
 	m->phone->setAccount(m->appsettings.account);
 
 	connect(&*m->phone, SIGNAL(incoming(QString)), this, SLOT(onIncoming(QString)));
+	connect(&*m->phone, SIGNAL(calling_established()), this, SLOT(onCallingEstablished()));
 	connect(&*m->phone, SIGNAL(closed()), this, SLOT(onClosed()));
 	connect(&*m->phone, SIGNAL(dtmf_input(QString)), this, SLOT(onDTMF(QString)));
 
@@ -84,6 +85,11 @@ void MainWindow::onIncoming(QString const &text)
 	ui->label_message->setText(text);
 	setStatusText(QString());
 	ui->checkBox_hold->setChecked(false);
+}
+
+void MainWindow::onCallingEstablished()
+{
+	qDebug() << Q_FUNC_INFO;
 }
 
 void MainWindow::onClosed()

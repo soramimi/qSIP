@@ -56,10 +56,10 @@ private slots:
 
 	void on_checkBox_hold_clicked();
 
-	void onIncoming(const QString &text);
 	void onClosed();
 	void onDTMF(const QString &text);
-
+	void onIncoming(const QString &text);
+	void onCallingEstablished();
 private:
 	Ui::MainWindow *ui;
 	void push(int n);
