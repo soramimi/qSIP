@@ -168,8 +168,12 @@ void PhoneThread::custom_filter(int16_t *ptr, int len)
 		if (m->voice->pos < n) {
 			n -= m->voice->pos;
 			if (n > len) n = len;
+			int16_t *dst = ptr;
+			if (m->voice->pos == 0) {
+				dst += len - n;
+			}
 			int16_t const *p = (int16_t const *)(m->voice->ba.data() + m->voice->offset) + m->voice->pos;
-			memcpy(ptr + len - n, p, n * sizeof(int16_t));
+			memcpy(dst, p, n * sizeof(int16_t));
 			m->voice->pos += n;
 		}
 	}
