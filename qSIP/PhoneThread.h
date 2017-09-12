@@ -14,7 +14,7 @@
 struct Voice {
 	QByteArray ba;
 	int offset = 0;
-	int size = 0;
+	int count = 0;
 	int pos = 0;
 };
 typedef std::shared_ptr<Voice> VoicePtr;
@@ -46,6 +46,8 @@ public:
 	void setVoice(VoicePtr voice);
 
 	static void init();
+	void resetVoice();
+	const Voice *voice() const;
 protected:
 	void run();
 signals:

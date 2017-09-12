@@ -32,9 +32,19 @@ void PhoneThread::setAccount(const SIP::Account &account)
 	m->account = account;
 }
 
+Voice const *PhoneThread::voice() const
+{
+	return m->voice.get();
+}
+
 void PhoneThread::setVoice(VoicePtr voice)
 {
 	m->voice = voice;
+}
+
+void PhoneThread::resetVoice()
+{
+	m->voice.reset();
 }
 
 void PhoneThread::signal_handler(int sig)
@@ -164,7 +174,7 @@ void PhoneThread::hangup()
 void PhoneThread::custom_filter(int16_t *ptr, int len)
 {
 	if (m->voice) {
-		int n = m->voice->size;
+		int n = m->voice->count;
 		if (m->voice->pos < n) {
 			n -= m->voice->pos;
 			if (n > len) n = len;
@@ -175,6 +185,8 @@ void PhoneThread::custom_filter(int16_t *ptr, int len)
 			int16_t const *p = (int16_t const *)(m->voice->ba.data() + m->voice->offset) + m->voice->pos;
 			memcpy(dst, p, n * sizeof(int16_t));
 			m->voice->pos += n;
+		} else {
+			memset(ptr, 0, len * sizeof(int16_t));
 		}
 	}
 }
