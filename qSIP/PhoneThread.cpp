@@ -12,6 +12,7 @@ enum class Direction {
 struct PhoneThread::Private {
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
+	bool registered = false;
 	SIP::Account account;
 	VoicePtr voice;
 };
@@ -63,6 +64,14 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 
 	qDebug() << ev;
 	switch (ev) {
+	case UA_EVENT_REGISTER_OK:
+		m->registered = true;
+		emit registered(true);
+		break;
+	case UA_EVENT_UNREGISTER_OK:
+		m->registered = false;
+		emit registered(false);
+		break;
 	case UA_EVENT_CALL_INCOMING:
 		{
 			QString from = prm;

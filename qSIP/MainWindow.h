@@ -60,6 +60,7 @@ private slots:
 	void onDTMF(const QString &text);
 	void onIncoming(const QString &text);
 	void onCallingEstablished();
+	void onRegistered(bool f);
 private:
 	Ui::MainWindow *ui;
 	void push(int n);

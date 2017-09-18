@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
 	m->status_label = new StatusLabel;
 	ui->statusBar->addWidget(m->status_label);
 
+	onRegistered(false);
+
 	SettingsDialog::loadSettings(&m->appsettings);
 
 	PhoneThread::init();
@@ -76,8 +78,18 @@ void MainWindow::reregister()
 	connect(&*m->phone, SIGNAL(calling_established()), this, SLOT(onCallingEstablished()));
 	connect(&*m->phone, SIGNAL(closed()), this, SLOT(onClosed()));
 	connect(&*m->phone, SIGNAL(dtmf_input(QString)), this, SLOT(onDTMF(QString)));
+	connect(&*m->phone, SIGNAL(registered(bool)), this, SLOT(onRegistered(bool)));
 
 	m->phone->start();
+}
+
+void MainWindow::onRegistered(bool f)
+{
+	if (f) {
+		setStatusText("Ready.");
+	} else {
+		setStatusText("NOT REGISTERD !");
+	}
 }
 
 void MainWindow::onIncoming(QString const &text)

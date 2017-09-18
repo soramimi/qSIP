@@ -51,6 +51,7 @@ public:
 protected:
 	void run();
 signals:
+	void registered(bool reg);
 	void incoming(QString const &from);
 	void closed();
 	void incoming_established();
