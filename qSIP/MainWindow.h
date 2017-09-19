@@ -66,7 +66,7 @@ private:
 	void push(int n);
 	//	bool dial(QString const &text);
 	void reregister();
-	void unregister();
+	void close();
 };
 
 #endif // MAINWINDOW_H

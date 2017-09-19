@@ -43,11 +43,14 @@ public:
 	void hold(bool f);
 	void setAccount(SIP::Account const &account);
 
+	bool isRegistered() const;
+
 	void setVoice(VoicePtr voice);
 
 	static void init();
 	void resetVoice();
 	const Voice *voice() const;
+	void close();
 protected:
 	void run();
 signals:

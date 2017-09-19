@@ -33,17 +33,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 	SettingsDialog::loadSettings(&m->appsettings);
 
-	PhoneThread::init();
-
 	reregister();
 }
 
 MainWindow::~MainWindow()
 {
-	if (m->phone) {
-		m->phone->hangup();
-	}
-	unregister();
+	close();
 	delete m;
 	delete ui;
 }
@@ -58,18 +53,18 @@ void MainWindow::setStatusText(QString const &text)
 	m->status_label->setText(text);
 }
 
-void MainWindow::unregister()
+void MainWindow::close()
 {
 	if (m->phone) {
-		re_cancel();
-		m->phone->wait();
+		m->phone->close();
 	}
 	m->phone.reset();
 }
 
 void MainWindow::reregister()
 {
-	unregister();
+	close();
+	PhoneThread::init();
 
 	m->phone = std::shared_ptr<PhoneThread>(new PhoneThread);
 	m->phone->setAccount(m->appsettings.account);
