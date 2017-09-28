@@ -53,6 +53,15 @@ void PhoneThread::resetVoice()
 	m->voice.reset();
 }
 
+bool PhoneThread::isEndOfVoice() const
+{
+	Voice const *v = voice();
+	if (v && v->pos < v->count) {
+		return false;
+	}
+	return true;
+}
+
 void PhoneThread::signal_handler(int sig)
 {
 }
@@ -141,9 +150,15 @@ bool PhoneThread::dial(const QString &text)
 {
 	if (m->account.server.isEmpty()) return false;
 
+	QString nums;
+
 	for (int i = 0; i < text.size(); i++) {
 		ushort c = text.utf16()[i];
-		if (!QChar(c).isDigit()) {
+		if (QChar(c).isDigit()) {
+			nums += c;
+		} else if (c == '-' || QChar(c).isSpace()) {
+			// nop
+		} else {
 			return false;
 		}
 	}
@@ -151,7 +166,7 @@ bool PhoneThread::dial(const QString &text)
 	m->direction = Direction::Calling;
 
 	QString url = "sip:%1@%2";
-	url = url.arg(text).arg(makeServerAddress(m->account));
+	url = url.arg(nums).arg(makeServerAddress(m->account));
 	int r = ua_connect((struct ua *)m->ua, nullptr, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
 //	qDebug() << r;
 	return true;

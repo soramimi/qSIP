@@ -51,6 +51,7 @@ public:
 	void resetVoice();
 	const Voice *voice() const;
 	void close();
+	bool isEndOfVoice() const;
 protected:
 	void run();
 signals:
