@@ -472,7 +472,14 @@
     </property>
     <addaction name="action_settings"/>
    </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_test"/>
+   </widget>
    <addaction name="menu_Edit"/>
+   <addaction name="menu_Help"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -486,6 +493,14 @@
   <action name="action_settings">
    <property name="text">
     <string>&amp;Settings...</string>
+   </property>
+  </action>
+  <action name="action_test">
+   <property name="text">
+    <string>Test</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
  </widget>

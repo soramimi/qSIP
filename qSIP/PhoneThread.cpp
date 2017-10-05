@@ -12,7 +12,6 @@ enum class Direction {
 struct PhoneThread::Private {
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
-	bool registered = false;
 	SIP::Account account;
 	VoicePtr voice;
 };
@@ -28,6 +27,11 @@ PhoneThread::~PhoneThread()
 	delete m;
 }
 
+struct ua *PhoneThread::ua()
+{
+	return m->ua;
+}
+
 void PhoneThread::setAccount(const SIP::Account &account)
 {
 	m->account = account;
@@ -35,7 +39,7 @@ void PhoneThread::setAccount(const SIP::Account &account)
 
 bool PhoneThread::isRegistered() const
 {
-	return m->registered;
+	return ua_isregistered(m->ua);
 }
 
 Voice const *PhoneThread::voice() const
@@ -80,12 +84,10 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 	switch (ev) {
 	case UA_EVENT_REGISTER_OK:
 		qDebug() << "REGISTER_OK";
-		m->registered = true;
 		emit registered(true);
 		break;
 	case UA_EVENT_UNREGISTER_OK:
 		qDebug() << "UNREGISTER_OK";
-		m->registered = false;
 		emit registered(false);
 		break;
 	case UA_EVENT_CALL_INCOMING:
@@ -163,41 +165,40 @@ bool PhoneThread::dial(const QString &text)
 
 void PhoneThread::init()
 {
-	int r = 0;
-	libre_init();
-	mod_init();
-	r = configure();
-}
 
-void PhoneThread::close()
-{
-	hangup();
-//	ua_unregister((struct ua *)m->ua);
-//	ua_stop_all(true);
-	ua_close();
-	re_cancel();
-	if (!wait(3000)) {
-		terminate();
-	}
-	mod_close();
-	libre_close();
+	configure();
 }
 
 void PhoneThread::run()
 {
+	libre_init();
+	mod_init();
+
 	int r = 0;
 	r = uag_event_register(event_handler, this);
 
 	if (m->account.server.isEmpty()) {
 		// nop
 	} else {
-		QString aor = "sip:%1@%2";
+		QString aor = "<sip:%1@%2;transport=udp>";
 		aor = aor.arg(m->account.user).arg(makeServerAddress(m->account));
-		r = ua_init("SIP", false, true, true, true, false);
+		r = ua_init("qSIP 0.0", false, true, false, false, false);
 		r = ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
-//		r = ua_reregister((struct ua *)m->ua);
 	}
 	re_main(signal_handler, control_handler, custom_filter_handler, this);
+
+	ua_close();
+	mod_close();
+	libre_close();
+}
+
+void PhoneThread::close()
+{
+	hangup();
+	re_cancel();
+	if (!wait(3000)) {
+		terminate();
+	}
 }
 
 void PhoneThread::hangup()

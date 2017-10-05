@@ -19,6 +19,7 @@ public:
 
 	QString statusText() const;
 	void setStatusText(const QString &text);
+	bool isRegistered() const;
 private slots:
 	void on_toolButton_pad_1_clicked();
 
@@ -61,6 +62,8 @@ private slots:
 	void onIncoming(const QString &text);
 	void onCallingEstablished();
 	void onRegistered(bool f);
+	void on_action_test_triggered();
+
 private:
 	Ui::MainWindow *ui;
 	void push(int n);

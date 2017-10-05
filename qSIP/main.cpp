@@ -2,8 +2,9 @@
 #include <QApplication>
 #include "MySettings.h"
 #include "main.h"
-
+#include <time.h>
 #include <QMessageBox>
+#include <QDebug>
 
 QString application_data_dir;
 

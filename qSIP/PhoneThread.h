@@ -52,6 +52,7 @@ public:
 	const Voice *voice() const;
 	void close();
 	bool isEndOfVoice() const;
+	struct ua *ua();
 protected:
 	void run();
 signals:

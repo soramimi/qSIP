@@ -17,9 +17,8 @@ enum {
 struct MainWindow::Private {
 	StatusLabel *status_label;
 	ApplicationSettings appsettings;
-	struct ua *ua = nullptr;
+//	struct ua *ua = nullptr;
 	std::shared_ptr<PhoneThread> phone;
-	bool registered = false;
 	QTime registration_time;
 	int registration_seconds = 0;
 };
@@ -60,7 +59,7 @@ void MainWindow::setStatusText(QString const &text)
 
 void MainWindow::timerEvent(QTimerEvent *event)
 {
-	if (m->registered) {
+	if (isRegistered()) {
 		// ok
 	} else {
 		int elapsed = m->registration_time.elapsed() / 1000;
@@ -95,7 +94,6 @@ void MainWindow::reregister()
 
 	m->phone->start();
 
-	m->registered = false;
 	m->registration_seconds = 0;
 	m->registration_time = QTime();
 	m->registration_time.start();
@@ -106,9 +104,14 @@ void MainWindow::setRegistrationStatusText(QString const &text)
 	ui->label_regitration_status->setText(text);
 }
 
+bool MainWindow::isRegistered() const
+{
+	return m->phone && m->phone->isRegistered();
+}
+
 void MainWindow::updateRegistrationStatus()
 {
-	if (m->registered) {
+	if (isRegistered()) {
 		QString s = "%1 Ready.";
 		s = s.arg(m->appsettings.account.user);
 		setRegistrationStatusText(s);
@@ -125,7 +128,6 @@ void MainWindow::updateRegistrationStatus()
 
 void MainWindow::onRegistered(bool f)
 {
-	m->registered = f;
 	updateRegistrationStatus();
 }
 
@@ -272,3 +274,12 @@ void MainWindow::on_checkBox_hold_clicked()
 	m->phone->hold(hold);
 }
 
+
+void MainWindow::on_action_test_triggered()
+{
+	if (m->phone) {
+		qDebug() << "reregister";
+		ua_reregister(m->phone->ua());
+		updateRegistrationStatus();
+	}
+}
