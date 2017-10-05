@@ -67,6 +67,12 @@ private:
 	//	bool dial(QString const &text);
 	void reregister();
 	void close();
+	void setRegistrationStatusText(const QString &text);
+
+	// QObject interface
+	void updateRegistrationStatus();
+protected:
+	void timerEvent(QTimerEvent *event);
 };
 
 #endif // MAINWINDOW_H

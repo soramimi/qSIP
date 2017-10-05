@@ -5,6 +5,7 @@
 #include "SettingsDialog.h"
 #include "StatusLabel.h"
 
+#include <QDateTime>
 #include <QDebug>
 #include "memory"
 
@@ -18,6 +19,9 @@ struct MainWindow::Private {
 	ApplicationSettings appsettings;
 	struct ua *ua = nullptr;
 	std::shared_ptr<PhoneThread> phone;
+	bool registered = false;
+	QTime registration_time;
+	int registration_seconds = 0;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -29,9 +33,10 @@ MainWindow::MainWindow(QWidget *parent)
 	m->status_label = new StatusLabel;
 	ui->statusBar->addWidget(m->status_label);
 
-	onRegistered(false);
+	updateRegistrationStatus();
 
 	SettingsDialog::loadSettings(&m->appsettings);
+	startTimer(10);
 
 	reregister();
 }
@@ -51,6 +56,19 @@ QString MainWindow::statusText() const
 void MainWindow::setStatusText(QString const &text)
 {
 	m->status_label->setText(text);
+}
+
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+	if (m->registered) {
+		// ok
+	} else {
+		int elapsed = m->registration_time.elapsed() / 1000;
+		if (m->registration_seconds != elapsed) {
+			m->registration_seconds = elapsed;
+			updateRegistrationStatus();
+		}
+	}
 }
 
 void MainWindow::close()
@@ -76,15 +94,39 @@ void MainWindow::reregister()
 	connect(&*m->phone, SIGNAL(registered(bool)), this, SLOT(onRegistered(bool)));
 
 	m->phone->start();
+
+	m->registered = false;
+	m->registration_seconds = 0;
+	m->registration_time = QTime();
+	m->registration_time.start();
+}
+
+void MainWindow::setRegistrationStatusText(QString const &text)
+{
+	ui->label_regitration_status->setText(text);
+}
+
+void MainWindow::updateRegistrationStatus()
+{
+	if (m->registered) {
+		QString s = "%1 Ready.";
+		s = s.arg(m->appsettings.account.user);
+		setRegistrationStatusText(s);
+	} else {
+		if (m->registration_seconds < 3) {
+			setRegistrationStatusText("NOT REGISTERD !");
+		} else {
+			QString s = "Wait for registration %1s";
+			s = s.arg(m->registration_seconds);
+			setRegistrationStatusText(s);
+		}
+	}
 }
 
 void MainWindow::onRegistered(bool f)
 {
-	if (f) {
-		setStatusText("Ready.");
-	} else {
-		setStatusText("NOT REGISTERD !");
-	}
+	m->registered = f;
+	updateRegistrationStatus();
 }
 
 void MainWindow::onIncoming(QString const &text)
@@ -214,9 +256,9 @@ void MainWindow::on_action_settings_triggered()
 	SettingsDialog dlg(this);
 	if (dlg.exec() == QDialog::Accepted) {
 		ApplicationSettings const &newsettings = dlg.settings();
-		bool rr = m->appsettings.account != newsettings.account;
+		bool eq = m->appsettings.account == newsettings.account;
 		m->appsettings = newsettings;
-		if (rr) {
+		if (!eq) {
 			reregister();
 		}
 	}

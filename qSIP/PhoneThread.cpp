@@ -95,10 +95,6 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 				from = tr("Incoming call from") + "\n" + from;
 				emit incoming(from);
 			}
-			{
-				struct play *play = nullptr;
-//				int r = play_file(&play, "d:/mythbusters.wav", 1);
-			}
 		}
 		break;
 	case UA_EVENT_CALL_ESTABLISHED:
@@ -109,13 +105,6 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		case Direction::Calling:
 			emit calling_established();
 			break;
-		}
-
-		{
-//			struct audio *a = call_audio(call);
-//			audio_mute(a, true);
-//			struct play *play = nullptr;
-//			play_file(&play, "d:/mythbusters.wav", 1);
 		}
 		break;
 	case UA_EVENT_CALL_CLOSED:
@@ -183,6 +172,8 @@ void PhoneThread::init()
 void PhoneThread::close()
 {
 	hangup();
+//	ua_unregister((struct ua *)m->ua);
+//	ua_stop_all(true);
 	ua_close();
 	re_cancel();
 	if (!wait(3000)) {
@@ -204,7 +195,7 @@ void PhoneThread::run()
 		aor = aor.arg(m->account.user).arg(makeServerAddress(m->account));
 		r = ua_init("SIP", false, true, true, true, false);
 		r = ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
-		r = ua_reregister((struct ua *)m->ua);
+//		r = ua_reregister((struct ua *)m->ua);
 	}
 	re_main(signal_handler, control_handler, custom_filter_handler, this);
 }
