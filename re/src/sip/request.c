@@ -91,7 +91,7 @@ static void destructor(void *arg)
 
 
 static void terminate(struct sip_request *req, int err,
-		      const struct sip_msg *msg)
+			  const struct sip_msg *msg, void *user1, void *user2)
 {
 	if (req->reqp) {
 		*req->reqp = NULL;
@@ -102,7 +102,7 @@ static void terminate(struct sip_request *req, int err,
 	req->sendh = NULL;
 
 	if (req->resph) {
-		req->resph(err, msg, req->arg);
+		req->resph(err, msg, req->arg, user1, user2);
 		req->resph = NULL;
 	}
 }
@@ -117,14 +117,14 @@ static bool close_handler(struct le *le, void *arg)
 	req->dnsq2 = mem_deref(req->dnsq2);
 	req->ct    = mem_deref(req->ct);
 
-	terminate(req, ECONNABORTED, NULL);
+	terminate(req, ECONNABORTED, NULL, NULL, NULL);
 	mem_deref(req);
 
 	return false;
 }
 
 
-static void response_handler(int err, const struct sip_msg *msg, void *arg)
+static void response_handler(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2)
 {
 	struct sip_request *req = arg;
 
@@ -136,7 +136,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 		}
 
 		if (req->resph)
-			req->resph(err, msg, req->arg);
+			req->resph(err, msg, req->arg, NULL, NULL);
 
 		return;
 	}
@@ -151,7 +151,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 			return;
 	}
 
-	terminate(req, err, msg);
+	terminate(req, err, msg, user1, user2);
 	mem_deref(req);
 }
 
@@ -405,14 +405,14 @@ static void naptr_handler(int err, const struct dnshdr *hdr, struct list *ansl,
 
 	if (!req->stateful) {
 		req->resph = NULL;
-		terminate(req, 0, NULL);
+		terminate(req, 0, NULL, NULL, NULL);
 		mem_deref(req);
 	}
 
 	return;
 
  fail:
-	terminate(req, err, NULL);
+	terminate(req, err, NULL, NULL, NULL);
 	mem_deref(req);
 }
 
@@ -465,14 +465,14 @@ static void srv_handler(int err, const struct dnshdr *hdr, struct list *ansl,
 
 	if (!req->stateful) {
 		req->resph = NULL;
-		terminate(req, 0, NULL);
+		terminate(req, 0, NULL, NULL, NULL);
 		mem_deref(req);
 	}
 
 	return;
 
  fail:
-	terminate(req, err, NULL);
+	terminate(req, err, NULL, NULL, NULL);
 	mem_deref(req);
 }
 
@@ -503,14 +503,14 @@ static void addr_handler(int err, const struct dnshdr *hdr, struct list *ansl,
 
 	if (!req->stateful) {
 		req->resph = NULL;
-		terminate(req, 0, NULL);
+		terminate(req, 0, NULL, NULL, NULL);
 		mem_deref(req);
 	}
 
 	return;
 
  fail:
-	terminate(req, err, NULL);
+	terminate(req, err, NULL, NULL, NULL);
 	mem_deref(req);
 }
 

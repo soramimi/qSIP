@@ -3,13 +3,9 @@
 #include <QDebug>
 
 
-enum class Direction {
-	None,
-	Incoming,
-	Calling,
-};
 
 struct PhoneThread::Private {
+	PhoneState state = PhoneState::None;
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
 	struct call *call = nullptr;
@@ -28,6 +24,21 @@ PhoneThread::~PhoneThread()
 	delete m;
 }
 
+PhoneState PhoneThread::state() const
+{
+	return m->state;
+}
+
+Direction PhoneThread::direction() const
+{
+	return m->direction;
+}
+
+void PhoneThread::setState(PhoneState s)
+{
+	m->state = s;
+}
+
 struct ua *PhoneThread::ua()
 {
 	return m->ua;
@@ -41,6 +52,11 @@ void PhoneThread::setAccount(const SIP::Account &account)
 bool PhoneThread::isRegistered() const
 {
 	return ua_isregistered(m->ua);
+}
+
+bool PhoneThread::isIdling() const
+{
+	return state() == PhoneState::Idle;
 }
 
 Voice const *PhoneThread::voice() const
@@ -118,6 +134,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		emit registered(false);
 		break;
 	case UA_EVENT_CALL_INCOMING:
+		m->direction = Direction::Incoming;
 		{
 			QString from = prm;
 			if (!from.isEmpty()) {
@@ -126,19 +143,31 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 			}
 		}
 		break;
+	case UA_EVENT_CALL_OUTGOING:
+		m->direction = Direction::Outgoing;
+		break;
+	case UA_EVENT_CALL_TRYING:
+		setState(PhoneState::Trying);
+		break;
+	case UA_EVENT_CALL_RINGING:
+		setState(PhoneState::Ringing);
+		break;
 	case UA_EVENT_CALL_ESTABLISHED:
+		setState(PhoneState::Established);
 		switch (m->direction) {
 		case Direction::Incoming:
 			emit incoming_established();
 			break;
-		case Direction::Calling:
-			emit calling_established();
+		case Direction::Outgoing:
+			emit outgoing_established();
 			break;
 		}
 		break;
 	case UA_EVENT_CALL_CLOSED:
-		emit closed();
+		m->call = nullptr;
+		emit closed((int)direction());
 		m->direction = Direction::None;
+		setState(PhoneState::Idle);
 		break;
 	case UA_EVENT_CALL_DTMF_START:
 		emit dtmf_input(prm);
@@ -182,25 +211,11 @@ bool PhoneThread::dial(const QString &text)
 		}
 	}
 
-	m->direction = Direction::Calling;
-
 	QString url = "sip:%1@%2";
 	url = url.arg(nums).arg(makeServerAddress(m->account));
 	int r = ua_connect((struct ua *)m->ua, &m->call, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
 //	qDebug() << r;
 	return true;
-}
-
-void PhoneThread::init()
-{
-
-//	configure();
-}
-
-static inline void strncpyz(char *dst, const char *src, int dstsize)
-{
-	strncpy(dst, src, dstsize);
-	dst[dstsize-1] = '\0';
 }
 
 void PhoneThread::run()
@@ -217,10 +232,15 @@ void PhoneThread::run()
 		// nop
 	} else {
 		QString aor = "<sip:%1@%2;transport=udp>;audio_codecs=PCMU/8000/1,PCMA/8000/1";
-		aor = aor.arg(m->account.user).arg(makeServerAddress(m->account));
+		aor = aor
+				.arg(m->account.user)
+				.arg(makeServerAddress(m->account))
+				;
 		r = ua_init("qSIP 0.0", false, true, true, true, false);
 		r = ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
 	}
+	qDebug() << (void *)custom_filter_handler;
+	qDebug() << (void *)this;
 	re_main(signal_handler, control_handler, custom_filter_handler, this);
 
 	ua_close();
@@ -240,6 +260,8 @@ void PhoneThread::close()
 void PhoneThread::hangup()
 {
 	ua_hangup(m->ua, nullptr, 0, nullptr);
+	m->direction = Direction::None;
+	setState(PhoneState::Idle);
 }
 
 void PhoneThread::custom_filter(int16_t *ptr, int len)
@@ -281,7 +303,6 @@ void PhoneThread::custom_filter_handler(void *cookie, int16_t *ptr, int len)
 
 void PhoneThread::answer()
 {
-	m->direction = Direction::Incoming;
 	ua_answer(m->ua, nullptr, 0, nullptr, nullptr, nullptr);
 }
 

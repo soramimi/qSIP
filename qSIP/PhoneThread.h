@@ -19,6 +19,20 @@ struct Voice {
 };
 typedef std::shared_ptr<Voice> VoicePtr;
 
+enum class PhoneState {
+	None,
+	Idle,
+	Trying,
+	Ringing,
+	Established,
+};
+
+enum class Direction {
+	None,
+	Incoming,
+	Outgoing,
+};
+
 class PhoneThread : public QThread {
 	Q_OBJECT
 private:
@@ -33,9 +47,13 @@ private:
 
 	static void custom_filter_handler(void *cookie, int16_t *ptr, int len);
 	void custom_filter(int16_t *ptr, int len);
+	void setState(PhoneState s);
 public:
 	PhoneThread();
 	~PhoneThread();
+
+	PhoneState state() const;
+	Direction direction() const;
 
 	bool dial(const QString &text);
 	void hangup();
@@ -44,10 +62,10 @@ public:
 	void setAccount(SIP::Account const &account);
 
 	bool isRegistered() const;
+	bool isIdling() const;
 
 	void setVoice(VoicePtr voice);
 
-	static void init();
 	void resetVoice();
 	const Voice *voice() const;
 	void close();
@@ -58,9 +76,9 @@ protected:
 signals:
 	void registered(bool reg);
 	void incoming(QString const &from);
-	void closed();
+	void closed(int dir);
 	void incoming_established();
-	void calling_established();
+	void outgoing_established();
 	void dtmf_input(QString const &text);
 };
 

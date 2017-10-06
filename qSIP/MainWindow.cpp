@@ -17,7 +17,6 @@ enum {
 struct MainWindow::Private {
 	StatusLabel *status_label;
 	ApplicationSettings appsettings;
-//	struct ua *ua = nullptr;
 	std::shared_ptr<PhoneThread> phone;
 	QTime registration_time;
 	int registration_seconds = 0;
@@ -81,7 +80,6 @@ void MainWindow::close()
 void MainWindow::reregister()
 {
 	close();
-	PhoneThread::init();
 
 	m->phone = std::shared_ptr<PhoneThread>(new PhoneThread);
 	m->phone->setAccount(m->appsettings.account);
@@ -148,6 +146,8 @@ void MainWindow::onClosed()
 	ui->label_message->clear();
 	setStatusText(QString());
 	ui->checkBox_hold->setChecked(false);
+
+	updateRegistrationStatus();
 }
 
 void MainWindow::onDTMF(QString const &text)

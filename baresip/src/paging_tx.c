@@ -188,9 +188,9 @@ int paging_tx_start(struct paging_tx *tx)
     }
 	if (tx->codec->pt) {
 		int pt = atoi(tx->codec->pt);
-		err  = audio_encoder_set(tx->audio, tx->codec, pt, tx->params);
+		err  = audio_encoder_set(tx->audio, tx->codec, pt, tx->params, NULL, NULL);
 		if (!err) {
-			err = audio_start(tx->audio);
+			err = audio_start(tx->audio, NULL, NULL);
 		}
 		if (err) {
 			DEBUG_WARNING("audio stream: %m\n", err);
