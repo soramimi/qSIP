@@ -140,6 +140,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		break;
 	case UA_EVENT_CALL_DTMF_START:
 		emit dtmf_input(prm);
+		qDebug() << prm;
 		break;
 	}
 }
