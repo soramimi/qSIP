@@ -1,5 +1,5 @@
 #include "PhoneThread.h"
-
+#include <string.h>
 #include <QDebug>
 
 
@@ -12,6 +12,7 @@ enum class Direction {
 struct PhoneThread::Private {
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
+	struct call *call = nullptr;
 	SIP::Account account;
 	VoicePtr voice;
 };
@@ -158,7 +159,7 @@ bool PhoneThread::dial(const QString &text)
 
 	QString url = "sip:%1@%2";
 	url = url.arg(nums).arg(makeServerAddress(m->account));
-	int r = ua_connect((struct ua *)m->ua, nullptr, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
+	int r = ua_connect((struct ua *)m->ua, &m->call, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
 //	qDebug() << r;
 	return true;
 }
@@ -166,7 +167,13 @@ bool PhoneThread::dial(const QString &text)
 void PhoneThread::init()
 {
 
-	configure();
+//	configure();
+}
+
+static inline void strncpyz(char *dst, const char *src, int dstsize)
+{
+	strncpy(dst, src, dstsize);
+	dst[dstsize-1] = '\0';
 }
 
 void PhoneThread::run()
@@ -174,15 +181,17 @@ void PhoneThread::run()
 	libre_init();
 	mod_init();
 
+	configure();
+
 	int r = 0;
 	r = uag_event_register(event_handler, this);
 
 	if (m->account.server.isEmpty()) {
 		// nop
 	} else {
-		QString aor = "<sip:%1@%2;transport=udp>";
+		QString aor = "<sip:%1@%2;transport=udp>;audio_codecs=PCMU/8000/1,PCMA/8000/1";
 		aor = aor.arg(m->account.user).arg(makeServerAddress(m->account));
-		r = ua_init("qSIP 0.0", false, true, false, false, false);
+		r = ua_init("qSIP 0.0", false, true, true, true, false);
 		r = ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
 	}
 	re_main(signal_handler, control_handler, custom_filter_handler, this);
