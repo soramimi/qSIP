@@ -77,7 +77,7 @@ void PhoneThread::control_handler()
 
 void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *prm)
 {
-	static char *eventname[] = {
+	static char const *eventname[] = {
 		"UA_EVENT_REGISTERING",
 		"UA_EVENT_REGISTER_OK",
 		"UA_EVENT_REGISTER_FAIL",
@@ -94,6 +94,8 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		"UA_EVENT_CALL_TRANSFER_FAILED",
 		"UA_EVENT_CALL_DTMF_START",
 		"UA_EVENT_CALL_DTMF_END",
+		"UA_EVENT_CALL_TRANSFER",
+		"UA_EVENT_CALL_TRANSFER_OOD",
 	};
 	const int eventmax = sizeof(eventname) / sizeof(*eventname);
 

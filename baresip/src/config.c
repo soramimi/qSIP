@@ -34,6 +34,7 @@ static struct config core_config = {
 		"","",
 		"","",
 		"","",
+		"","",
 		{8000, 48000},
 		{1, 2},
 		0,

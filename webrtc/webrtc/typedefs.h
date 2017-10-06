@@ -93,4 +93,14 @@ typedef unsigned __int64    uint64_t;
 #define OVERRIDE
 #endif
 
+// C++ Builder
+#if 0
+#define __restrict
+#define sqrtf sqrt
+#define powf pow
+#define cosf cos
+#define sinf sin
+#define atanf atan
+#endif
+
 #endif  // WEBRTC_TYPEDEFS_H_

@@ -11,12 +11,11 @@
 #ifndef WEBRTC_SYSTEM_WRAPPERS_INTERFACE_CPU_FEATURES_WRAPPER_H_
 #define WEBRTC_SYSTEM_WRAPPERS_INTERFACE_CPU_FEATURES_WRAPPER_H_
 
-#include <stdint.h>
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
+#include <stdint.h>
 //#include <typedefs.h>
 
 // List of features in x86.

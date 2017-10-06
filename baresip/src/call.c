@@ -127,7 +127,7 @@ static void call_stream_start(struct call *call, bool active)
 
 		if (ac) {
 			err  = audio_encoder_set(call->audio, sc->data,
-						 sc->pt, sc->params, NULL, NULL);
+						 sc->pt, sc->params);
 			if (err) {
 				DEBUG_WARNING("call: start:"
 					" audio_encoder_set error: %m\n", err);
@@ -140,7 +140,7 @@ static void call_stream_start(struct call *call, bool active)
 			}
 
 			if (!err) {
-				err = audio_start(call->audio, NULL, NULL);
+				err = audio_start(call->audio);
 			}
 			if (err) {
 				DEBUG_WARNING("audio stream: %m\n", err);
@@ -288,7 +288,7 @@ static void mnat_handler(int err, uint16_t scode, const char *reason,
 }
 
 
-static int update_media(struct call *call, user_filter_fn user1, void *user2)
+static int update_media(struct call *call)
 {
 	const struct sdp_format *sc;
 	struct le *le;
@@ -317,7 +317,7 @@ static int update_media(struct call *call, user_filter_fn user1, void *user2)
 			err  = audio_decoder_set(call->audio, sc->data,
 						 sc->pt, sc->params);
 			err |= audio_encoder_set(call->audio, sc->data,
-						 sc->pt, sc->params, user1, user2);
+						 sc->pt, sc->params);
 		}
 		else {
 			(void)re_printf("no common audio-codecs..\n");
@@ -721,7 +721,7 @@ int call_progress(struct call *call)
 }
 
 
-int call_answer(struct call *call, uint16_t scode, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2)
+int call_answer(struct call *call, uint16_t scode, const char *audio_mod, const char *audio_dev)
 {
 	struct mbuf *desc;
 	int err;
@@ -742,7 +742,7 @@ int call_answer(struct call *call, uint16_t scode, const char *audio_mod, const 
 
 	if (call->got_offer) {
 
-		err = update_media(call, user1, user2);
+		err = update_media(call);
 		if (err)
 			return err;
 	}
@@ -1014,7 +1014,7 @@ static int sipsess_offer_handler(struct mbuf **descp,
 		if (err)
 			return err;
 
-		err = update_media(call, NULL, NULL);
+		err = update_media(call);
 		if (err)
 			return err;
 	}
@@ -1024,7 +1024,7 @@ static int sipsess_offer_handler(struct mbuf **descp,
 }
 
 
-static int sipsess_answer_handler(const struct sip_msg *msg, void *arg, void *user1, void *user2)
+static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
 {
 	struct call *call = arg;
 	int err;
@@ -1039,7 +1039,7 @@ static int sipsess_answer_handler(const struct sip_msg *msg, void *arg, void *us
 		return err;
 	}
 
-	err = update_media(call, (user_filter_fn)user1, user2);
+	err = update_media(call);
 	if (err)
 		return err;
 

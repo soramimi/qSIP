@@ -212,7 +212,6 @@ static int inet_pton(int af, const char *src, void *dst)
 
 #endif
 
-
 /**
  * Convert character string to a network address structure
  *

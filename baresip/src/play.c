@@ -196,6 +196,8 @@ static int aufile_load(struct mbuf *mb, const char *filename,
  * Play a tone from a PCM buffer
  *
  * @param playp    Pointer to allocated player object
+ * @param mod      Audio module type used for playing
+ * @param dev      Audio device name used for playing
  * @param tone     PCM buffer to play
  * @param srate    Sampling rate
  * @param ch       Number of channels
@@ -203,8 +205,8 @@ static int aufile_load(struct mbuf *mb, const char *filename,
  *
  * @return 0 if success, otherwise errorcode
  */
-int play_tone(struct play **playp, struct mbuf *tone, uint32_t srate,
-	      uint8_t ch, int repeat)
+int play_tone(struct play **playp, const char *mod, const char *dev, struct mbuf *tone, uint32_t srate,
+		  uint8_t ch, int repeat)
 {
 	struct auplay_prm wprm;
 	struct play *play;
@@ -230,8 +232,8 @@ int play_tone(struct play **playp, struct mbuf *tone, uint32_t srate,
 	wprm.srate      = srate;
 	wprm.frame_size = srate * ch * 100 / 1000;
 
-	err = auplay_alloc(&play->auplay, cfg_audio.alert_mod, &wprm,
-			   cfg_audio.alert_dev, write_handler, play);
+	err = auplay_alloc(&play->auplay, mod, &wprm,
+			   dev, write_handler, play);
 	if (err)
 		goto out;
 
@@ -255,12 +257,14 @@ int play_tone(struct play **playp, struct mbuf *tone, uint32_t srate,
  * Play an audio file in WAV format
  *
  * @param playp    Pointer to allocated player object
+ * @param mod      Audio module type used for playing
+ * @param dev      Audio device name used for playing 
  * @param filename Name of WAV file to play
  * @param repeat   Number of times to repeat
  *
  * @return 0 if success, otherwise errorcode
  */
-int play_file(struct play **playp, const char *filename, int repeat)
+int play_file(struct play **playp, const char *mod, const char *dev, const char *filename, int repeat)
 {
 	struct mbuf *mb;
 	char path[768];
@@ -285,7 +289,7 @@ int play_file(struct play **playp, const char *filename, int repeat)
 		goto out;
 	}
 
-	err = play_tone(playp, mb, srate, ch, repeat);
+	err = play_tone(playp, mod, dev, mb, srate, ch, repeat);
 
  out:
 	mem_deref(mb);

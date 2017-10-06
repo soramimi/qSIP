@@ -94,7 +94,7 @@ const struct ausrc *ausrc_find(const char *name)
  */
 int ausrc_alloc(struct ausrc_st **stp, struct media_ctx **ctx,
 		const char *name, struct ausrc_prm *prm, const char *device,
-		ausrc_read_h *rh, ausrc_error_h *errh, void *arg, user_filter_fn user1, void *user2)
+		ausrc_read_h *rh, ausrc_error_h *errh, void *arg)
 {
 	struct ausrc *as;
 
@@ -102,5 +102,5 @@ int ausrc_alloc(struct ausrc_st **stp, struct media_ctx **ctx,
 	if (!as)
 		return ENOENT;
 
-	return as->alloch(stp, as, ctx, prm, device, rh, errh, arg, user1, user2);
+	return as->alloch(stp, as, ctx, prm, device, rh, errh, arg);
 }
