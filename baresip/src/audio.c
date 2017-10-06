@@ -978,7 +978,7 @@ static int start_player(struct aurx *rx, struct audio *a)
 }
 
 
-static int start_source(struct autx *tx, struct audio *a, user_filter_fn user1, void *user2)
+static int start_source(struct autx *tx, struct audio *a, struct user_extra_data_t *user_extra_data)
 {
 	const struct aucodec *ac = tx->ac;
 	uint32_t srate_dsp = get_srate(tx->ac);
@@ -1028,7 +1028,7 @@ static int start_source(struct autx *tx, struct audio *a, user_filter_fn user1, 
 
 		err = ausrc_alloc(&tx->ausrc, NULL, a->cfg.src_mod,
 				  &prm, tx->device,
-				  ausrc_read_handler, ausrc_error_handler, a, user1, user2);
+				  ausrc_read_handler, ausrc_error_handler, a, user_extra_data);
 		if (err) {
 			DEBUG_WARNING("start_source failed: %m\n", err);
 			return err;
@@ -1072,7 +1072,7 @@ static int start_source(struct autx *tx, struct audio *a, user_filter_fn user1, 
  *
  * @return 0 if success, otherwise errorcode
  */
-int audio_start(struct audio *a, user_filter_fn user1, void *user2)
+int audio_start(struct audio *a, struct user_extra_data_t *user_extra_data)
 {
 	int err;
 
@@ -1092,12 +1092,12 @@ int audio_start(struct audio *a, user_filter_fn user1, void *user2)
 
 	/* configurable order of play/src start */
 	if (a->cfg.src_first) {
-		err  = start_source(&a->tx, a, user1, user2);
+		err  = start_source(&a->tx, a, user_extra_data);
 		err |= start_player(&a->rx, a);
 	}
 	else {
 		err  = start_player(&a->rx, a);
-		err |= start_source(&a->tx, a, user1, user2);
+		err |= start_source(&a->tx, a, user_extra_data);
 	}
 	if (err)
 		return err;
@@ -1164,7 +1164,7 @@ void audio_stop(struct audio *a)
 
 
 int audio_encoder_set(struct audio *a, const struct aucodec *ac,
-			  int pt_tx, const char *params, user_filter_fn user1, void *user2)
+			  int pt_tx, const char *params, struct user_extra_data_t *user_extra_data)
 {
 	struct autx *tx;
 	int err = 0;
@@ -1207,7 +1207,7 @@ int audio_encoder_set(struct audio *a, const struct aucodec *ac,
 	stream_update_encoder(a->strm, pt_tx);
 
 	if (!tx->ausrc) {
-		err |= audio_start(a, user1, user2);
+		err |= audio_start(a, user_extra_data);
 	}
 
 	return err;
@@ -1255,7 +1255,7 @@ int audio_decoder_set(struct audio *a, const struct aucodec *ac,
 		/* Reset audio filter chain */
 		list_flush(&rx->filtl);
 
-		err |= audio_start(a, NULL, NULL);
+		err |= audio_start(a, NULL);
 	}
 
 	return err;
@@ -1280,7 +1280,7 @@ void audio_encoder_cycle(struct audio *audio)
 		return;
 	}
 
-	(void)audio_encoder_set(audio, rc->data, rc->pt, rc->params, NULL, NULL);
+	(void)audio_encoder_set(audio, rc->data, rc->pt, rc->params, NULL);
 }
 
 
@@ -1452,7 +1452,7 @@ int audio_set_source(struct audio *au, const char *mod, const char *device)
 	tx->ausrc = mem_deref(tx->ausrc);
 
 	err = ausrc_alloc(&tx->ausrc, NULL, mod, &tx->ausrc_prm, device,
-			  ausrc_read_handler, ausrc_error_handler, au, NULL, NULL);
+			  ausrc_read_handler, ausrc_error_handler, au, NULL);
 	if (err) {
 		DEBUG_WARNING("audio: set_source failed (%s.%s): %m\n",
 			mod, device, err);

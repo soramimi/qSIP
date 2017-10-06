@@ -50,13 +50,12 @@ struct sipreg {
 static int request(struct sipreg *reg, bool reset_ls);
 
 
-static void dummy_handler(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2)
+static void dummy_handler(int err, const struct sip_msg *msg, void *arg, void *user_extra_data)
 {
 	(void)err;
 	(void)msg;
 	(void)arg;
-	(void)user1;
-	(void)user2;
+	(void)user_extra_data;
 }
 
 
@@ -106,7 +105,7 @@ static void tmr_handler(void *arg)
 	err = request(reg, true);
 	if (err) {
 		tmr_start(&reg->tmr, failwait(++reg->failc), tmr_handler, reg);
-		reg->resph(err, NULL, reg->arg, NULL, NULL);
+		reg->resph(err, NULL, reg->arg, NULL);
 	}
 }
 
@@ -120,7 +119,7 @@ static void keepalive_handler(int err, void *arg)
 		return;
 
 	tmr_start(&reg->tmr, failwait(++reg->failc), tmr_handler, reg);
-	reg->resph(err, NULL, reg->arg, NULL, NULL);
+	reg->resph(err, NULL, reg->arg, NULL);
 }
 
 
@@ -169,10 +168,9 @@ static bool contact_handler(const struct sip_hdr *hdr,
 }
 
 
-static void response_handler(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2)
+static void response_handler(int err, const struct sip_msg *msg, void *arg, void *user_extra_data)
 {
-	(void)user1;
-	(void)user2;
+	(void)user_extra_data;
 	const struct sip_hdr *minexp;
 	struct sipreg *reg = arg;
 
@@ -248,7 +246,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg, void
 	}
 	else {
 		tmr_start(&reg->tmr, reg->wait, tmr_handler, reg);
-		reg->resph(err, msg, reg->arg, NULL, NULL);
+		reg->resph(err, msg, reg->arg, NULL);
 	}
 }
 

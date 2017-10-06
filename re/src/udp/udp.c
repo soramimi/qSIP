@@ -130,7 +130,7 @@ static void udp_destructor(void *data)
 }
 
 
-static void udp_read(struct udp_sock *us, int fd, void *user1, void *user2)
+static void udp_read(struct udp_sock *us, int fd, void *user_extra_data)
 {
 	struct mbuf *mb = mbuf_alloc(us->rxsz);
 	struct sa src;
@@ -220,20 +220,20 @@ static void udp_read(struct udp_sock *us, int fd, void *user1, void *user2)
 			goto out;
 	}
 
-	us->rh(&src, mb, us->arg, user1, user2);
+	us->rh(&src, mb, us->arg, user_extra_data);
 
  out:
 	mem_deref(mb);
 }
 
 
-static void udp_read_handler(int flags, void *arg, void *user1, void *user2)
+static void udp_read_handler(int flags, void *arg, void *user_extra_data)
 {
 	struct udp_sock *us = arg;
 
 	(void)flags;
 
-	udp_read(us, us->fd, user1, user2);
+	udp_read(us, us->fd, user_extra_data);
 }
 
 
@@ -243,7 +243,7 @@ static void udp_read_handler6(int flags, void *arg)
 
 	(void)flags;
 
-	udp_read(us, us->fd6, NULL, NULL);
+	udp_read(us, us->fd6, NULL);
 }
 
 

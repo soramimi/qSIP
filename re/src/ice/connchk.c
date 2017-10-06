@@ -256,8 +256,7 @@ int icem_conncheck_send(struct candpair *cp, bool use_cand, bool trigged)
 
 	case CAND_TYPE_RELAY:
 		/* Creating Permissions for Relayed Candidates */
-		err = turnc_add_chan(cp->comp->turnc, &cp->rcand->addr,
-				     NULL, NULL);
+		err = turnc_add_chan(cp->comp->turnc, &cp->rcand->addr, NULL, NULL);
 		if (err) {
 			DEBUG_WARNING("add channel: %m\n", err);
 			break;

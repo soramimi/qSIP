@@ -9,6 +9,7 @@ struct PhoneThread::Private {
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
 	struct call *call = nullptr;
+	user_extra_data_t user_extra_data;
 	SIP::Account account;
 	VoicePtr voice;
 };
@@ -241,7 +242,9 @@ void PhoneThread::run()
 	}
 	qDebug() << (void *)custom_filter_handler;
 	qDebug() << (void *)this;
-	re_main(signal_handler, control_handler, custom_filter_handler, this);
+	m->user_extra_data.audio_source_filter_fn = custom_filter_handler;
+	m->user_extra_data.cookie = this;
+	re_main(signal_handler, control_handler, &m->user_extra_data);
 
 	ua_close();
 	mod_close();
@@ -303,7 +306,7 @@ void PhoneThread::custom_filter_handler(void *cookie, int16_t *ptr, int len)
 
 void PhoneThread::answer()
 {
-	ua_answer(m->ua, nullptr, 0, nullptr, nullptr, nullptr);
+	ua_answer(m->ua, nullptr, 0, nullptr, nullptr);
 }
 
 void PhoneThread::hold(bool f)

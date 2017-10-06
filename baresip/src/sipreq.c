@@ -73,7 +73,7 @@ static void resp_handler(int err, const struct sip_msg *msg, void *arg)
 	}
 
  out:
-	sr->resph(err, msg, sr->arg, NULL, NULL);
+	sr->resph(err, msg, sr->arg, NULL);
 
 	/* destroy now */
 	mem_deref(sr);

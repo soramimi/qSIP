@@ -30,8 +30,7 @@ struct ausrc_st {
 	ausrc_read_h *rh;
 	void *arg;
 
-	user_filter_fn user_filter;
-	void *user_cookie;
+	struct user_extra_data_t *user_extra_data;
 };
 
 
@@ -125,10 +124,11 @@ static void CALLBACK waveInCallback(HWAVEOUT hwo,
 		if (st->rdy) {
 			waveInUnprepareHeader(st->wavein, wh, sizeof(*wh));
 
-			if (st->user_filter) {
+			struct user_extra_data_t *ex = st->user_extra_data;
+			if (ex) {
 				int16_t *p = wh->lpData;
 				int n = wh->dwBytesRecorded / 2;
-				st->user_filter(st->user_cookie, p, n);
+				ex->audio_source_filter_fn(ex->cookie, p, n);
 			}
 
 			st->rh((uint8_t *)wh->lpData, wh->dwBytesRecorded, st->arg);
@@ -210,7 +210,7 @@ static int read_stream_open(unsigned int dev, struct ausrc_st *st, const struct 
 int winwave_src_alloc(struct ausrc_st **stp, struct ausrc *as,
 		      struct media_ctx **ctx,
 		      struct ausrc_prm *prm, const char *device,
-			  ausrc_read_h *rh, ausrc_error_h *errh, void *arg, user_filter_fn user1, void *user2)
+			  ausrc_read_h *rh, ausrc_error_h *errh, void *arg, struct user_extra_data_t *user_extra_data)
 {
 	struct ausrc_st *st;
 	int err;
@@ -229,12 +229,7 @@ int winwave_src_alloc(struct ausrc_st **stp, struct ausrc *as,
 	st->as  = mem_ref(as);
 	st->rh  = rh;
 	st->arg = arg;
-	st->user_filter = user1;
-	st->user_cookie = user2;
-
-	void *v1 = user1;
-	void *v2 = user2;
-
+	st->user_extra_data = user_extra_data;
 
 	prm->fmt = AUFMT_S16LE;
 
