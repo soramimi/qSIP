@@ -77,18 +77,42 @@ void PhoneThread::control_handler()
 
 void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *prm)
 {
+	static char *eventname[] = {
+		"UA_EVENT_REGISTERING",
+		"UA_EVENT_REGISTER_OK",
+		"UA_EVENT_REGISTER_FAIL",
+		"UA_EVENT_UNREGISTERING",
+		"UA_EVENT_UNREGISTER_OK",
+		"UA_EVENT_UNREGISTER_FAIL",
+		"UA_EVENT_CALL_INCOMING",
+		"UA_EVENT_CALL_OUTGOING",
+		"UA_EVENT_CALL_TRYING",
+		"UA_EVENT_CALL_RINGING",
+		"UA_EVENT_CALL_PROGRESS",
+		"UA_EVENT_CALL_ESTABLISHED",
+		"UA_EVENT_CALL_CLOSED",
+		"UA_EVENT_CALL_TRANSFER_FAILED",
+		"UA_EVENT_CALL_DTMF_START",
+		"UA_EVENT_CALL_DTMF_END",
+	};
+	const int eventmax = sizeof(eventname) / sizeof(*eventname);
+
 	std::string peername;
 	char const *p = call_peername(call);;
 	if (p) peername = p;
 
-	qDebug() << ev;
+	{
+		if (ev >= 0 && ev < eventmax) {
+			qDebug() << eventname[ev];
+		} else {
+			qDebug() << QString("??? UA EVENT: %1 ???").arg(ev);
+		}
+	}
 	switch (ev) {
 	case UA_EVENT_REGISTER_OK:
-		qDebug() << "REGISTER_OK";
 		emit registered(true);
 		break;
 	case UA_EVENT_UNREGISTER_OK:
-		qDebug() << "UNREGISTER_OK";
 		emit registered(false);
 		break;
 	case UA_EVENT_CALL_INCOMING:

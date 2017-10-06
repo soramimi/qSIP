@@ -140,7 +140,7 @@ void MainWindow::onIncoming(QString const &text)
 
 void MainWindow::onCallingEstablished()
 {
-	qDebug() << Q_FUNC_INFO;
+//	qDebug() << Q_FUNC_INFO;
 }
 
 void MainWindow::onClosed()
