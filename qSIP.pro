@@ -28,7 +28,9 @@ SOURCES += \
     qSIP/SettingAccountForm.cpp \
     qSIP/AbstractSettingForm.cpp \
     qSIP/misc.cpp \
-    qSIP/StatusLabel.cpp
+    qSIP/StatusLabel.cpp \
+    qSIP/PhoneWidget.cpp \
+    qSIP/ClearButton.cpp
 
 HEADERS += \
 	qSIP/MainWindow.h \
@@ -41,9 +43,15 @@ HEADERS += \
     qSIP/misc.h \
     qSIP/main.h \
     qSIP/Account.h \
-    qSIP/StatusLabel.h
+    qSIP/StatusLabel.h \
+    qSIP/PhoneWidget.h \
+    qSIP/ClearButton.h
 
 FORMS += \
 	qSIP/MainWindow.ui \
     qSIP/SettingsDialog.ui \
-    qSIP/SettingAccountForm.ui
+    qSIP/SettingAccountForm.ui \
+    qSIP/PhoneWidget.ui
+
+RESOURCES += \
+    qSIP/resources.qrc

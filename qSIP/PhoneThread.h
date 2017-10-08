@@ -22,8 +22,8 @@ typedef std::shared_ptr<Voice> VoicePtr;
 enum class PhoneState {
 	None,
 	Idle,
-	Trying,
-	Ringing,
+	Outgoing,
+	Incoming,
 	Established,
 };
 
@@ -48,18 +48,21 @@ private:
 	static void custom_filter_handler(void *cookie, int16_t *ptr, int len);
 	void custom_filter(int16_t *ptr, int len);
 	void setState(PhoneState s);
+	void clearPeerUser();
+	const char *uaName() const;
 public:
-	PhoneThread();
+	PhoneThread(const std::string &user_agent);
 	~PhoneThread();
 
 	PhoneState state() const;
 	Direction direction() const;
 
-	bool dial(const QString &text);
+	bool call(const QString &text);
 	void hangup();
 	void answer();
 	void hold(bool f);
 	void setAccount(SIP::Account const &account);
+	SIP::Account const &account() const;
 
 	bool isRegistered() const;
 	bool isIdling() const;
@@ -71,15 +74,17 @@ public:
 	void close();
 	bool isEndOfVoice() const;
 	struct ua *ua();
+	QString peerNumber() const;
 protected:
 	void run();
 signals:
 	void registered(bool reg);
-	void incoming(QString const &from);
+	void call_incoming(QString const &from);
 	void closed(int dir);
 	void incoming_established();
 	void outgoing_established();
 	void dtmf_input(QString const &text);
+	void state_changed(int);
 };
 
 

@@ -19,63 +19,13 @@ public:
 
 	QString statusText() const;
 	void setStatusText(const QString &text);
-	bool isRegistered() const;
 private slots:
-	void on_toolButton_pad_1_clicked();
-
-	void on_toolButton_pad_2_clicked();
-
-	void on_toolButton_pad_3_clicked();
-
-	void on_toolButton_pad_4_clicked();
-
-	void on_toolButton_pad_5_clicked();
-
-	void on_toolButton_pad_6_clicked();
-
-	void on_toolButton_pad_7_clicked();
-
-	void on_toolButton_pad_8_clicked();
-
-	void on_toolButton_pad_9_clicked();
-
-	void on_toolButton_pad_0_clicked();
-
-	void on_toolButton_pad_aster_clicked();
-
-	void on_toolButton_pad_sharp_clicked();
-
-	void on_toolButton_clear_clicked();
-
-	void on_toolButton_call_clicked();
-
-	void on_toolButton_hangup_clicked();
-
-	void on_toolButton_answer_clicked();
-
 	void on_action_settings_triggered();
-
-	void on_checkBox_hold_clicked();
-
-	void onClosed();
-	void onDTMF(const QString &text);
-	void onIncoming(const QString &text);
-	void onCallingEstablished();
-	void onRegistered(bool f);
 	void on_action_test_triggered();
-
 private:
 	Ui::MainWindow *ui;
-	void push(int n);
-	//	bool dial(QString const &text);
 	void reregister();
 	void close();
-	void setRegistrationStatusText(const QString &text);
-
-	// QObject interface
-	void updateRegistrationStatus();
-protected:
-	void timerEvent(QTimerEvent *event);
 };
 
 #endif // MAINWINDOW_H

@@ -5,24 +5,31 @@
 
 
 struct PhoneThread::Private {
+	std::string user_agent;
 	PhoneState state = PhoneState::None;
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
 	struct call *call = nullptr;
 	user_extra_data_t user_extra_data;
 	SIP::Account account;
+	QString peer_number;
 	VoicePtr voice;
 };
 
-PhoneThread::PhoneThread()
+PhoneThread::PhoneThread(std::string const &user_agent)
 	: m(new Private)
 {
-
+	m->user_agent = user_agent;
 }
 
 PhoneThread::~PhoneThread()
 {
 	delete m;
+}
+
+char const *PhoneThread::uaName() const
+{
+	return m->user_agent.empty() ? "qSIP" : m->user_agent.c_str();
 }
 
 PhoneState PhoneThread::state() const
@@ -37,7 +44,10 @@ Direction PhoneThread::direction() const
 
 void PhoneThread::setState(PhoneState s)
 {
-	m->state = s;
+	if (m->state != s) {
+		m->state = s;
+		emit state_changed((int)m->state);
+	}
 }
 
 struct ua *PhoneThread::ua()
@@ -48,6 +58,16 @@ struct ua *PhoneThread::ua()
 void PhoneThread::setAccount(const SIP::Account &account)
 {
 	m->account = account;
+}
+
+SIP::Account const &PhoneThread::account() const
+{
+	return m->account;
+}
+
+QString PhoneThread::peerNumber() const
+{
+	return m->peer_number;
 }
 
 bool PhoneThread::isRegistered() const
@@ -92,7 +112,12 @@ void PhoneThread::control_handler()
 {
 }
 
-void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *prm)
+void PhoneThread::clearPeerUser()
+{
+	m->peer_number = QString();
+}
+
+void PhoneThread::onEvent(struct ua *ua, ua_event ev, struct call *call, const char *prm)
 {
 	static char const *eventname[] = {
 		"UA_EVENT_REGISTERING",
@@ -135,12 +160,11 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		emit registered(false);
 		break;
 	case UA_EVENT_CALL_INCOMING:
+		setState(PhoneState::Incoming);
 		m->direction = Direction::Incoming;
 		{
-			QString from = prm;
-			if (!from.isEmpty()) {
-				from = tr("Incoming call from") + "\n" + from;
-				emit incoming(from);
+			if (prm && *prm) {
+				emit call_incoming(prm);
 			}
 		}
 		break;
@@ -148,10 +172,10 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		m->direction = Direction::Outgoing;
 		break;
 	case UA_EVENT_CALL_TRYING:
-		setState(PhoneState::Trying);
+		setState(PhoneState::Outgoing);
 		break;
 	case UA_EVENT_CALL_RINGING:
-		setState(PhoneState::Ringing);
+		setState(PhoneState::Outgoing);
 		break;
 	case UA_EVENT_CALL_ESTABLISHED:
 		setState(PhoneState::Established);
@@ -166,6 +190,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 		break;
 	case UA_EVENT_CALL_CLOSED:
 		m->call = nullptr;
+		clearPeerUser();
 		emit closed((int)direction());
 		m->direction = Direction::None;
 		setState(PhoneState::Idle);
@@ -177,7 +202,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, call *call, const char *pr
 	}
 }
 
-void PhoneThread::event_handler(struct ua *ua, ua_event ev, call *call, const char *prm, void *arg)
+void PhoneThread::event_handler(struct ua *ua, ua_event ev, struct call *call, const char *prm, void *arg)
 {
 	PhoneThread *me = (PhoneThread *)arg;
 	me->onEvent(ua, ev, call, prm);
@@ -195,16 +220,18 @@ static QString makeServerAddress(SIP::Account const &a)
 	return addr;
 }
 
-bool PhoneThread::dial(const QString &text)
+bool PhoneThread::call(const QString &text)
 {
+	clearPeerUser();
+
 	if (m->account.server.isEmpty()) return false;
 
-	QString nums;
+	QString peer_number;
 
 	for (int i = 0; i < text.size(); i++) {
 		ushort c = text.utf16()[i];
 		if (QChar(c).isDigit()) {
-			nums += c;
+			peer_number += c;
 		} else if (c == '-' || QChar(c).isSpace()) {
 			// nop
 		} else {
@@ -212,11 +239,15 @@ bool PhoneThread::dial(const QString &text)
 		}
 	}
 
+	if (peer_number.isEmpty()) return false;
+
 	QString url = "sip:%1@%2";
-	url = url.arg(nums).arg(makeServerAddress(m->account));
+	url = url.arg(peer_number).arg(makeServerAddress(m->account));
 	int r = ua_connect((struct ua *)m->ua, &m->call, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
-//	qDebug() << r;
-	return true;
+	if (r == 0) {
+		m->peer_number = peer_number;
+	}
+	return r == 0;
 }
 
 void PhoneThread::run()
@@ -237,13 +268,12 @@ void PhoneThread::run()
 				.arg(m->account.user)
 				.arg(makeServerAddress(m->account))
 				;
-		r = ua_init("qSIP 0.0", false, true, true, true, false);
+		r = ua_init(uaName(), false, true, true, true, false);
 		r = ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
 	}
-	qDebug() << (void *)custom_filter_handler;
-	qDebug() << (void *)this;
 	m->user_extra_data.audio_source_filter_fn = custom_filter_handler;
 	m->user_extra_data.cookie = this;
+	setState(PhoneState::Idle);
 	re_main(signal_handler, control_handler, &m->user_extra_data);
 
 	ua_close();
@@ -263,6 +293,7 @@ void PhoneThread::close()
 void PhoneThread::hangup()
 {
 	ua_hangup(m->ua, nullptr, 0, nullptr);
+	clearPeerUser();
 	m->direction = Direction::None;
 	setState(PhoneState::Idle);
 }
