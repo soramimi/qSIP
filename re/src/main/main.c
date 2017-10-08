@@ -835,8 +835,8 @@ int re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user_
 
 		err = fd_poll(re, user_extra_data);
 		if (err) {
-			if (EINTR == err)
-				continue;
+			if (err == EINTR) continue;
+			if (err == ENOENT) continue;
 
 #ifdef DARWIN
 			/* NOTE: workaround for Darwin */
