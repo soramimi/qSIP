@@ -155,7 +155,7 @@ static int read_file(struct ausrc_st *st)
 static int alloc_handler(struct ausrc_st **stp, struct ausrc *as,
 			 struct media_ctx **ctx,
 			 struct ausrc_prm *prm, const char *dev,
-			 ausrc_read_h *rh, ausrc_error_h *errh, void *arg)
+			 ausrc_read_h *rh, ausrc_error_h *errh, void *arg, void *user_data)
 {
 	struct ausrc_st *st;
 	struct aufile_prm fprm;

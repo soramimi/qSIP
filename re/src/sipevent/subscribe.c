@@ -157,7 +157,7 @@ void sipsub_terminate(struct sipsub *sub, int err, const struct sip_msg *msg,
 }
 
 
-static void response_handler(int err, const struct sip_msg *msg, void *arg)
+static void response_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	const struct sip_hdr *minexp;
 	struct sipsub *sub = arg;
@@ -295,8 +295,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 }
 
 
-static int send_handler(enum sip_transp tp, const struct sa *src,
-			const struct sa *dst, struct mbuf *mb, void *arg)
+static int send_handler(enum sip_transp tp, const struct sa *src, const struct sa *dst, struct mbuf *mb, void *arg)
 {
 	struct sipsub *sub = arg;
 	(void)dst;

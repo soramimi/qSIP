@@ -344,7 +344,7 @@ static void subscribe_handler(struct sipevent_sock *sock,
 }
 
 
-static bool request_handler(const struct sip_msg *msg, void *arg)
+static bool request_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipevent_sock *sock = arg;
 
@@ -355,7 +355,7 @@ static bool request_handler(const struct sip_msg *msg, void *arg)
 			return true;
 		}
 
-		return sock->subh ? sock->subh(msg, sock->arg) : false;
+		return sock->subh ? sock->subh(msg, sock->arg, NULL) : false;
 	}
 	else if (!pl_strcmp(&msg->met, "NOTIFY")) {
 

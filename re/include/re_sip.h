@@ -256,16 +256,13 @@ struct sip_dialog;
 struct sip_keepalive;
 struct dnsc;
 
-typedef bool(sip_msg_h)(const struct sip_msg *msg, void *arg);
-typedef int(sip_send_h)(enum sip_transp tp, const struct sa *src,
-			const struct sa *dst, struct mbuf *mb, void *arg);
-typedef void(sip_resp_h)(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2);
+typedef bool(sip_msg_h)(const struct sip_msg *msg, void *arg, void *user_data);
+typedef int(sip_send_h)(enum sip_transp tp, const struct sa *src, const struct sa *dst, struct mbuf *mb, void *arg);
+typedef void(sip_resp_h)(int err, const struct sip_msg *msg, void *arg, void *user_data);
 typedef void(sip_cancel_h)(void *arg);
 typedef void(sip_exit_h)(void *arg);
-typedef int(sip_auth_h)(char **username, char **password, const char *realm,
-			void *arg);
-typedef bool(sip_hdr_h)(const struct sip_hdr *hdr, const struct sip_msg *msg,
-			void *arg);
+typedef int(sip_auth_h)(char **username, char **password, const char *realm, void *arg);
+typedef bool(sip_hdr_h)(const struct sip_hdr *hdr, const struct sip_msg *msg, void *arg);
 typedef void(sip_keepalive_h)(int err, void *arg);
 
 

@@ -22,6 +22,11 @@ extern "C" {
 
 typedef void (*user_filter_fn)(void *cookie, int16_t *ptr, int len);
 
+struct user_extra_data_t {
+	void *cookie;
+	user_filter_fn filter;
+};
+
 /* forward declarations */
 struct sa;
 struct sdp_media;
@@ -314,7 +319,7 @@ typedef void (ausrc_error_h)(int err, const char *str, void *arg);
 typedef int  (ausrc_alloc_h)(struct ausrc_st **stp, struct ausrc *ausrc,
 			     struct media_ctx **ctx,
 			     struct ausrc_prm *prm, const char *device,
-			     ausrc_read_h *rh, ausrc_error_h *errh, void *arg);
+				 ausrc_read_h *rh, ausrc_error_h *errh, void *arg, void *user_data);
 
 int ausrc_register(struct ausrc **asp, const char *name,
 		   ausrc_alloc_h *alloch);
@@ -322,7 +327,7 @@ const struct ausrc *ausrc_find(const char *name);
 int ausrc_alloc(struct ausrc_st **stp, struct media_ctx **ctx,
 		const char *name,
 		struct ausrc_prm *prm, const char *device,
-		ausrc_read_h *rh, ausrc_error_h *errh, void *arg, user_filter_fn user1, void *user2);
+		ausrc_read_h *rh, ausrc_error_h *errh, void *arg, struct user_extra_data_t *user_data);
 
 
 /*
@@ -344,7 +349,7 @@ typedef bool (auplay_write_h)(uint8_t *buf, size_t sz, void *arg);
 
 typedef int  (auplay_alloc_h)(struct auplay_st **stp, struct auplay *ap,
 			      struct auplay_prm *prm, const char *device,
-			      auplay_write_h *wh, void *arg);
+				  auplay_write_h *wh, void *arg, void *user_data);
 
 int auplay_register(struct auplay **pp, const char *name,
 		    auplay_alloc_h *alloch);
@@ -505,20 +510,15 @@ enum vidmode {
 };
 
 /** Defines the User-Agent event handler */
-typedef void (ua_event_h)(struct ua *ua, enum ua_event ev,
-			  struct call *call, const char *prm, void *arg);
-typedef void (options_resp_h)(int err, const struct sip_msg *msg, void *arg);
+typedef void (ua_event_h)(struct ua *ua, enum ua_event ev, struct call *call, const char *prm, void *arg);
+typedef void (options_resp_h)(int err, const struct sip_msg *msg, void *arg, void *user_data);
 
 /* Multiple instances */
 int  ua_alloc(struct ua **uap, const char *aor, const char *pwd, const char *cuser);
-int  ua_connect(struct ua *ua, struct call **callp,
-		const char *from_uri, const char *uri,
-		const char *params, enum vidmode vmode);
-void ua_hangup(struct ua *ua, struct call *call,
-	       uint16_t scode, const char *reason);
-int  ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2);
-int  ua_options_send(struct ua *ua, const char *uri,
-		     options_resp_h *resph, void *arg);
+int  ua_connect(struct ua *ua, struct call **callp, const char *from_uri, const char *uri, const char *params, enum vidmode vmode);
+void ua_hangup(struct ua *ua, struct call *call, uint16_t scode, const char *reason);
+int  ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, struct user_extra_data_t *user_data);
+int  ua_options_send(struct ua *ua, const char *uri, options_resp_h *resph, void *arg);
 int  ua_sipfd(const struct ua *ua);
 int  ua_debug(struct re_printf *pf, const struct ua *ua);
 int  ua_print_calls(struct re_printf *pf, const struct ua *ua);

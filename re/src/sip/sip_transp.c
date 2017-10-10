@@ -229,7 +229,7 @@ static void conn_keepalive_handler(void *arg)
 }
 
 
-static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user1, void *user2)
+static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user_data)
 {
 	struct le *le = sip->lsnrl.head;
 
@@ -246,7 +246,7 @@ static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user1, vo
 		if (msg->req != lsnr->req)
 			continue;
 
-		if (lsnr->msgh(msg, lsnr->arg, user1, user2))
+		if (lsnr->msgh(msg, lsnr->arg, user_data))
 			return;
 	}
 
@@ -269,7 +269,7 @@ static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user1, vo
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user1, void *user2)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct sip_transport *transp = arg;
 	struct stun_unknown_attr ua;
@@ -310,8 +310,7 @@ static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, v
 
 	err = sip_msg_decode(&msg, mb);
 	if (err) {
-		(void)re_printf("sip: msg decode err: %s\n",
-				 strerror(err));
+		(void)re_printf("sip: msg decode err: %s\n", strerror(err));
 		return;
 	}
 
@@ -320,13 +319,13 @@ static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, v
 	msg->dst = transp->laddr;
 	msg->tp = SIP_TRANSP_UDP;
 
-	sip_recv(transp->sip, msg, user1, user2);
+	sip_recv(transp->sip, msg, user_data);
 
 	mem_deref(msg);
 }
 
 
-static void tcp_recv_handler(struct mbuf *mb, void *arg)
+static void tcp_recv_handler(struct mbuf *mb, void *arg, void *user_data)
 {
 	struct sip_conn *conn = arg;
 	size_t pos;
@@ -422,7 +421,7 @@ static void tcp_recv_handler(struct mbuf *mb, void *arg)
 		msg->dst = conn->laddr;
 		msg->tp = conn->sc ? SIP_TRANSP_TLS : SIP_TRANSP_TCP;
 
-		sip_recv(conn->sip, msg, NULL, NULL);
+		sip_recv(conn->sip, msg, NULL);
 		mem_deref(msg);
 
 		if (end <= conn->mb->end) {
@@ -653,8 +652,7 @@ int sip_transp_add(struct sip *sip, enum sip_transp tp,
 	switch (tp) {
 
 	case SIP_TRANSP_UDP:
-		err = udp_listen((struct udp_sock **)&transp->sock, laddr,
-				 udp_recv_handler, transp);
+		err = udp_listen((struct udp_sock **)&transp->sock, laddr, udp_recv_handler, transp);
 		if (err)
 			break;
 

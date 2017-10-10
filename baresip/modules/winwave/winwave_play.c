@@ -1,3 +1,8 @@
+
+#ifdef UNICODE
+#undef UNICODE
+#endif
+
 /**
  * @file winwave/play.c Windows sound driver -- playback
  *
@@ -198,7 +203,7 @@ static int write_stream_open(unsigned int dev, struct auplay_st *st,
 
 int winwave_play_alloc(struct auplay_st **stp, struct auplay *ap,
 		       struct auplay_prm *prm, const char *device,
-		       auplay_write_h *wh, void *arg)
+			   auplay_write_h *wh, void *arg, void *user_data)
 {
 	struct auplay_st *st;
 	int i, err;

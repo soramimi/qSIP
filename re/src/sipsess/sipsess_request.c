@@ -32,8 +32,7 @@ static void destructor(void *arg)
 }
 
 
-static void internal_resp_handler(int err, const struct sip_msg *msg,
-				  void *arg)
+static void internal_resp_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	(void)err;
 	(void)msg;

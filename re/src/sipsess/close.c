@@ -17,7 +17,7 @@
 #include "sipsess.h"
 
 
-static void bye_resp_handler(int err, const struct sip_msg *msg, void *arg)
+static void bye_resp_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipsess *sess = arg;
 

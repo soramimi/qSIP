@@ -161,7 +161,7 @@ static void destructor(void *data)
 }
 
 
-static void rtcp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
+static void rtcp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct rtp_sock *rs = arg;
 	struct rtcp_msg *msg;
@@ -180,7 +180,7 @@ static void rtcp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct rtp_sock *rs = arg;
 	struct rtp_header hdr;
@@ -196,7 +196,7 @@ static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
 		pt = mbuf_buf(mb)[1] & 0x7f;
 
 		if (64 <= pt && pt <= 95) {
-			rtcp_recv_handler(src, mb, arg);
+			rtcp_recv_handler(src, mb, arg, NULL);
 			return;
 		}
 	}

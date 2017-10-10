@@ -36,7 +36,7 @@ typedef void (tcp_send_h)(void *arg);
  * @param mb  Buffer with data
  * @param arg Handler argument
  */
-typedef void (tcp_recv_h)(struct mbuf *mb, void *arg);
+typedef void (tcp_recv_h)(struct mbuf *mb, void *arg, void *user_data);
 
 /**
  * Defines the TCP connection close handler

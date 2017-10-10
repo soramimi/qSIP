@@ -29,8 +29,7 @@ static void destructor(void *arg)
  *
  * @return 0 if success, otherwise errorcode
  */
-int auplay_register(struct auplay **app, const char *name,
-		    auplay_alloc_h *alloch)
+int auplay_register(struct auplay **app, const char *name, auplay_alloc_h *alloch)
 {
 	struct auplay *ap;
 
@@ -104,5 +103,5 @@ int auplay_alloc(struct auplay_st **stp, const char *name,
 	if (!prm->srate || !prm->ch)
 		return EINVAL;
 
-	return ap->alloch(stp, ap, prm, device, wh, arg);
+	return ap->alloch(stp, ap, prm, device, wh, arg, NULL);
 }

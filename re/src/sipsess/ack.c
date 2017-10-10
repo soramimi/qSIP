@@ -66,7 +66,7 @@ static int send_handler(enum sip_transp tp, const struct sa *src,
 }
 
 
-static void resp_handler(int err, const struct sip_msg *msg, void *arg)
+static void resp_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipsess_ack *ack = arg;
 	(void)err;

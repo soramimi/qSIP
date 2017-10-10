@@ -1,3 +1,6 @@
+#ifdef UNICODE
+#undef UNICODE
+#endif
 /**
  * @file wif.c  Windows network interface code
  *

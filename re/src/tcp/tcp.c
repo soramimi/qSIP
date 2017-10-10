@@ -102,7 +102,7 @@ struct tcp_qent {
 };
 
 
-static void tcp_recv_handler(int flags, void *arg);
+static void tcp_recv_handler(int flags, void *arg, void *user_data);
 
 
 static bool helper_estab_handler(int *err, bool active, void *arg)
@@ -189,8 +189,7 @@ static int enqueue(struct tcp_conn *tc, struct mbuf *mb)
 
 	if (!tc->sendq.head && !tc->sendh) {
 
-		err = fd_listen(tc->fdc, FD_READ | FD_WRITE,
-				tcp_recv_handler, tc);
+		err = fd_listen(tc->fdc, FD_READ | FD_WRITE, tcp_recv_handler, tc);
 		if (err)
 			return err;
 	}
@@ -270,7 +269,7 @@ static void conn_close(struct tcp_conn *tc, int err)
 }
 
 
-static void tcp_recv_handler(int flags, void *arg)
+static void tcp_recv_handler(int flags, void *arg, void *user_data)
 {
 	struct tcp_conn *tc = arg;
 	struct mbuf *mb = NULL;
@@ -326,8 +325,7 @@ static void tcp_recv_handler(int flags, void *arg)
 
 			if (!tc->sendq.head && !tc->sendh) {
 
-				err = fd_listen(tc->fdc, FD_READ,
-						tcp_recv_handler, tc);
+				err = fd_listen(tc->fdc, FD_READ, tcp_recv_handler, tc);
 				if (err) {
 					conn_close(tc, err);
 					return;
@@ -434,7 +432,7 @@ static void tcp_recv_handler(int flags, void *arg)
 	}
 
 	if (mb->pos < mb->end && tc->recvh) {
-		tc->recvh(mb, tc->arg);
+		tc->recvh(mb, tc->arg, NULL);
 	}
 
  out:
@@ -487,7 +485,7 @@ static void tcp_sockopt_set(int fd)
  * @param flags  Event flags.
  * @param arg    Handler argument.
  */
-static void tcp_conn_handler(int flags, void *arg)
+static void tcp_conn_handler(int flags, void *arg, void *user_data)
 {
 	struct sa peer;
 	struct tcp_sock *ts = arg;
@@ -774,8 +772,7 @@ int tcp_accept(struct tcp_conn **tcp, struct tcp_sock *ts, tcp_estab_h *eh,
 	tc->fdc = ts->fdc;
 	ts->fdc = -1;
 
-	err = fd_listen(tc->fdc, FD_READ | FD_WRITE | FD_EXCEPT,
-			tcp_recv_handler, tc);
+	err = fd_listen(tc->fdc, FD_READ | FD_WRITE | FD_EXCEPT, tcp_recv_handler, tc);
 	if (err) {
 		DEBUG_WARNING("accept: fd_listen(): %m\n", err);
 	}
@@ -1046,8 +1043,7 @@ int tcp_conn_connect(struct tcp_conn *tc, const struct sa *peer)
 	if (err)
 		return err;
 
-	return fd_listen(tc->fdc, FD_READ | FD_WRITE | FD_EXCEPT,
-			 tcp_recv_handler, tc);
+	return fd_listen(tc->fdc, FD_READ | FD_WRITE | FD_EXCEPT, tcp_recv_handler, tc);
 }
 
 

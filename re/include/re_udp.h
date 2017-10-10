@@ -16,7 +16,7 @@ struct udp_sock;
  * @param mb  Datagram buffer
  * @param arg Handler argument
  */
-typedef void (udp_recv_h)(const struct sa *src, struct mbuf *mb, void *arg);
+typedef void (udp_recv_h)(const struct sa *src, struct mbuf *mb, void *arg, void *user_data);
 
 
 int  udp_listen(struct udp_sock **usp, const struct sa *local,

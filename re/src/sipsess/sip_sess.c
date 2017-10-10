@@ -28,7 +28,7 @@ static int internal_offer_handler(struct mbuf **descp,
 }
 
 
-static int internal_answer_handler(const struct sip_msg *msg, void *arg)
+static int internal_answer_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	(void)msg;
 	(void)arg;

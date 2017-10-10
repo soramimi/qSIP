@@ -181,8 +181,7 @@ static int mapping_send(struct nat_mapping *nm)
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb,
-			     void *arg)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct nat_mapping *nm = arg;
 	int err;
@@ -227,7 +226,7 @@ static void tcp_estab_handler(void *arg)
 }
 
 
-static void tcp_recv_handler(struct mbuf *mb, void *arg)
+static void tcp_recv_handler(struct mbuf *mb, void *arg, void *user_data)
 {
 	struct nat_mapping *nm = arg;
 	int err;

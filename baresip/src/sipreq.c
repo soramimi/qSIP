@@ -36,7 +36,7 @@ static void destructor(void *arg)
 }
 
 
-static void resp_handler(int err, const struct sip_msg *msg, void *arg)
+static void resp_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sip_req *sr = arg;
 
@@ -73,7 +73,7 @@ static void resp_handler(int err, const struct sip_msg *msg, void *arg)
 	}
 
  out:
-	sr->resph(err, msg, sr->arg, NULL, NULL);
+	sr->resph(err, msg, sr->arg, NULL);
 
 	/* destroy now */
 	mem_deref(sr);

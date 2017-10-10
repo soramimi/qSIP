@@ -216,7 +216,7 @@ static PaDeviceIndex find_dev(const char* name, bool out) {
 static int src_alloc(struct ausrc_st **stp, struct ausrc *as,
 		     struct media_ctx **ctx,
 		     struct ausrc_prm *prm, const char *device,
-		     ausrc_read_h *rh, ausrc_error_h *errh, void *arg)
+			 ausrc_read_h *rh, ausrc_error_h *errh, void *arg, void *user_data)
 {
 	struct ausrc_st *st;
 	int err;
@@ -253,7 +253,7 @@ static int src_alloc(struct ausrc_st **stp, struct ausrc *as,
 
 static int play_alloc(struct auplay_st **stp, struct auplay *ap,
 		      struct auplay_prm *prm, const char *device,
-		      auplay_write_h *wh, void *arg)
+			  auplay_write_h *wh, void *arg, void *user_data)
 {
 	struct auplay_st *st;
 	int err;

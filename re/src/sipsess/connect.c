@@ -32,7 +32,7 @@ static int send_handler(enum sip_transp tp, const struct sa *src,
 }
 
 
-static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg, void *user1, void *user2)
+static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipsess *sess = arg;
 	struct mbuf *desc = NULL;
@@ -53,7 +53,7 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg, v
 			goto out;
 
 		if (sess->sent_offer)
-			err = sess->answerh(msg, sess->arg, user1, user2);
+			err = sess->answerh(msg, sess->arg, user_data);
 		else {
 			sess->modify_pending = false;
 			err = sess->offerh(&desc, msg, sess->arg);

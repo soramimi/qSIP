@@ -233,7 +233,7 @@ static const struct cmd cmdv[] = {
 };
 
 
-static bool sub_handler(const struct sip_msg *msg, void *arg)
+static bool sub_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct ua *ua;
 

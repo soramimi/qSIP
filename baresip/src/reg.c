@@ -104,7 +104,7 @@ static int sip_auth_handler(char **username, char **password,
 }
 
 
-static void register_handler(int err, const struct sip_msg *msg, void *arg)
+static void register_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct reg *reg = arg;
 	const struct sip_hdr *hdr;

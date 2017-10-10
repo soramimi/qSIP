@@ -49,7 +49,7 @@ static bool strans_cmp(const struct bfcp_strans *st,
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct bfcp_conn *bc = arg;
 	struct bfcp_msg *msg;

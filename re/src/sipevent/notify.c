@@ -113,7 +113,7 @@ void sipnot_refresh(struct sipnot *not, uint32_t expires)
 }
 
 
-static void response_handler(int err, const struct sip_msg *msg, void *arg)
+static void response_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipnot *not = arg;
 

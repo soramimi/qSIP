@@ -59,8 +59,6 @@ void PhoneWidget::hangup()
 
 void PhoneWidget::setup(SIP::Account const &account)
 {
-	qDebug() << Q_FUNC_INFO;
-
 	close();
 
 	m->phone = std::shared_ptr<PhoneThread>(new PhoneThread("qSIP"));

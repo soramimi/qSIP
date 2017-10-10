@@ -211,7 +211,7 @@ static char * suffix P2((name, suf), char *name, char * suf)
 }
 
 
-static void catch_signals P1((fun), SIGHANDLER_T (*fun) ()) 
+static void catch_signals P1((fun), SIGHANDLER_T (*fun) (int))
 {
 #ifdef	SIGHUP
 	signal( SIGHUP,   fun );

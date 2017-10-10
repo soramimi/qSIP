@@ -22,7 +22,7 @@ enum {
  * @param flags  Event flags
  * @param arg    Handler argument
  */
-typedef void (fd_h)(int flags, void *arg);
+typedef void (fd_h)(int flags, void *arg, void *user_data);
 
 /**
  * Thread-safe signal handler
@@ -42,7 +42,7 @@ void  fd_debug(void);
 int   libre_init(void);
 void  libre_close(void);
 
-int   re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user1, void *user2);
+int   re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user_data);
 void  re_cancel(void);
 int   re_debug(struct re_printf *pf, void *unused);
 

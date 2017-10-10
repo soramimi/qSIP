@@ -9,15 +9,12 @@ struct sipsess;
 
 
 typedef void (sipsess_conn_h)(const struct sip_msg *msg, void *arg);
-typedef int  (sipsess_offer_h)(struct mbuf **descp, const struct sip_msg *msg,
-			       void *arg);
-typedef int  (sipsess_answer_h)(const struct sip_msg *msg, void *arg);
+typedef int  (sipsess_offer_h)(struct mbuf **descp, const struct sip_msg *msg, void *arg);
+typedef int  (sipsess_answer_h)(const struct sip_msg *msg, void *arg, void *user_data);
 typedef void (sipsess_progr_h)(const struct sip_msg *msg, void *arg);
 typedef void (sipsess_estab_h)(const struct sip_msg *msg, void *arg);
-typedef void (sipsess_info_h)(struct sip *sip, const struct sip_msg *msg,
-			      void *arg);
-typedef void (sipsess_refer_h)(struct sip *sip, const struct sip_msg *msg,
-			       void *arg);
+typedef void (sipsess_info_h)(struct sip *sip, const struct sip_msg *msg, void *arg);
+typedef void (sipsess_refer_h)(struct sip *sip, const struct sip_msg *msg, void *arg);
 typedef void (sipsess_close_h)(int err, const struct sip_msg *msg, void *arg);
 
 

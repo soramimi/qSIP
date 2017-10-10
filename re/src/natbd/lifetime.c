@@ -71,8 +71,7 @@ static void msg_recv(struct stun *stun, const struct sa *src,
 }
 
 
-static void udp_recv_handler_x(const struct sa *src, struct mbuf *mb,
-			       void *arg)
+static void udp_recv_handler_x(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct nat_lifetime *nl = arg;
 
@@ -128,8 +127,7 @@ static void stun_response_handler_x(int err, uint16_t scode,
  */
 
 
-static void udp_recv_handler_y(const struct sa *src, struct mbuf *mb,
-			       void *arg)
+static void udp_recv_handler_y(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct nat_lifetime *nl = arg;
 

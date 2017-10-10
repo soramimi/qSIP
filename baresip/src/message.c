@@ -36,7 +36,7 @@ static void handle_message(struct ua *ua, const struct sip_msg *msg)
 }
 
 
-static bool request_handler(const struct sip_msg *msg, void *arg)
+static bool request_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct ua *ua;
 
@@ -57,7 +57,7 @@ static bool request_handler(const struct sip_msg *msg, void *arg)
 }
 
 
-static void resp_handler(int err, const struct sip_msg *msg, void *arg)
+static void resp_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct ua *ua = arg;
 

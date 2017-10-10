@@ -10,7 +10,7 @@ struct PhoneThread::Private {
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
 	struct call *call = nullptr;
-//	user_extra_data_t user_extra_data;
+	user_extra_data_t user_extra_data;
 	SIP::Account account;
 	QString peer_number;
 	VoicePtr voice;
@@ -288,7 +288,9 @@ void PhoneThread::run()
 	setState(PhoneState::Idle);
 
 	while (1) {
-		int r = re_main(signal_handler, control_handler, custom_filter_handler, this);
+		m->user_extra_data.filter = custom_filter_handler;
+		m->user_extra_data.cookie = this;
+		int r = re_main(signal_handler, control_handler, &m->user_extra_data);
 		if (r == EINTR || r == ENOENT) {
 			// continue
 		} else {
@@ -359,7 +361,7 @@ void PhoneThread::custom_filter_handler(void *cookie, int16_t *ptr, int len)
 
 void PhoneThread::answer()
 {
-	ua_answer(m->ua, nullptr, 0, nullptr, nullptr, nullptr);
+	ua_answer(m->ua, nullptr, 0, nullptr, nullptr);
 }
 
 void PhoneThread::hold(bool f)

@@ -1,3 +1,6 @@
+#ifdef UNICODE
+#undef UNICODE
+#endif
 /*
  * $Id: pa_win_ds.c 1779 2011-11-10 14:51:15Z rossb $
  * Portable Audio I/O Library DirectSound implementation

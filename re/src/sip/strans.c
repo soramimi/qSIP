@@ -229,7 +229,7 @@ static bool cancel_handler(struct sip *sip, const struct sip_msg *msg)
 }
 
 
-static bool request_handler(const struct sip_msg *msg, void *arg)
+static bool request_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sip_strans *st;
 	struct sip *sip = arg;

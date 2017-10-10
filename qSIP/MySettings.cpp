@@ -20,6 +20,6 @@ QString makeApplicationDataDir()
 MySettings::MySettings(QObject *)
 	: QSettings(joinpath(makeApplicationDataDir(), qApp->applicationName() + ".ini"), QSettings::IniFormat)
 {
-	qDebug() << (joinpath(makeApplicationDataDir(), qApp->applicationName() + ".ini"));
+//	qDebug() << (joinpath(makeApplicationDataDir(), qApp->applicationName() + ".ini"));
 }
 

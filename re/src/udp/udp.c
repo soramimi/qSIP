@@ -82,8 +82,7 @@ struct udp_helper {
 };
 
 
-static void dummy_udp_recv_handler(const struct sa *src,
-				   struct mbuf *mb, void *arg)
+static void dummy_udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	(void)src;
 	(void)mb;
@@ -130,7 +129,7 @@ static void udp_destructor(void *data)
 }
 
 
-static void udp_read(struct udp_sock *us, int fd, void *user1, void *user2)
+static void udp_read(struct udp_sock *us, int fd, void *user_data)
 {
 	struct mbuf *mb = mbuf_alloc(us->rxsz);
 	struct sa src;
@@ -220,30 +219,30 @@ static void udp_read(struct udp_sock *us, int fd, void *user1, void *user2)
 			goto out;
 	}
 
-	us->rh(&src, mb, us->arg, user1, user2);
+	us->rh(&src, mb, us->arg, user_data);
 
  out:
 	mem_deref(mb);
 }
 
 
-static void udp_read_handler(int flags, void *arg, void *user1, void *user2)
+static void udp_read_handler(int flags, void *arg, void *user_data)
 {
 	struct udp_sock *us = arg;
 
 	(void)flags;
 
-	udp_read(us, us->fd, user1, user2);
+	udp_read(us, us->fd, user_data);
 }
 
 
-static void udp_read_handler6(int flags, void *arg)
+static void udp_read_handler6(int flags, void *arg, void *user_data)
 {
 	struct udp_sock *us = arg;
 
 	(void)flags;
 
-	udp_read(us, us->fd6, NULL, NULL);
+	udp_read(us, us->fd6, NULL);
 }
 
 
@@ -257,8 +256,7 @@ static void udp_read_handler6(int flags, void *arg)
  *
  * @return 0 if success, otherwise errorcode
  */
-int udp_listen(struct udp_sock **usp, const struct sa *local,
-	       udp_recv_h *rh, void *arg)
+int udp_listen(struct udp_sock **usp, const struct sa *local, udp_recv_h *rh, void *arg)
 {
 	struct addrinfo hints, *res = NULL, *r;
 	struct udp_sock *us = NULL;

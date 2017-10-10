@@ -25,8 +25,7 @@ static void tmr_handler(void *arg)
 }
 
 
-static void reinvite_resp_handler(int err, const struct sip_msg *msg,
-				  void *arg)
+static void reinvite_resp_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipsess *sess = arg;
 	const struct sip_hdr *hdr;
@@ -43,7 +42,7 @@ static void reinvite_resp_handler(int err, const struct sip_msg *msg,
 		(void)sip_dialog_update(sess->dlg, msg);
 
 		if (sess->sent_offer)
-			(void)sess->answerh(msg, sess->arg);
+			(void)sess->answerh(msg, sess->arg, NULL);
 		else {
 			sess->modify_pending = false;
 			(void)sess->offerh(&desc, msg, sess->arg);

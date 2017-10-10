@@ -114,7 +114,7 @@ static bool match_handler(struct le *le, void *arg)
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct stun *stun = arg;
 	(void)src;
@@ -123,7 +123,7 @@ static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
 }
 
 
-static void tcp_recv_handler(struct mbuf *mb, void *arg)
+static void tcp_recv_handler(struct mbuf *mb, void *arg, void *user_data)
 {
 	struct stun_ctrans *ct = arg;
 
@@ -260,8 +260,7 @@ int stun_ctrans_request(struct stun_ctrans **ctp, struct stun *stun, int proto,
 		tmr_start(&ct->tmr, ct->ival, timeout_handler, ct);
 
 		if (!sock) {
-			err = udp_listen((struct udp_sock **)&ct->sock, NULL,
-					 udp_recv_handler, stun);
+			err = udp_listen((struct udp_sock **)&ct->sock, NULL, udp_recv_handler, stun);
 			if (err)
 				break;
 		}

@@ -133,7 +133,7 @@ static bool cmp_handler(struct le *le, void *arg)
 }
 
 
-static void dummy_handler(int err, const struct sip_msg *msg, void *arg)
+static void dummy_handler(int err, const struct sip_msg *msg, void *arg, void *user_data)
 {
 	(void)err;
 	(void)msg;
@@ -148,7 +148,7 @@ static void terminate(struct sip_ctrans *ct, int err)
 	case TRYING:
 	case CALLING:
 	case PROCEEDING:
-		ct->resph(err, NULL, ct->arg, NULL, NULL);
+		ct->resph(err, NULL, ct->arg, NULL);
 		break;
 
 	default:
@@ -212,7 +212,7 @@ static void retransmit_handler(void *arg)
 }
 
 
-static void invite_response(struct sip_ctrans *ct, const struct sip_msg *msg, void *user1, void *user2)
+static void invite_response(struct sip_ctrans *ct, const struct sip_msg *msg, void *user_data)
 {
 	switch (ct->state) {
 
@@ -223,10 +223,10 @@ static void invite_response(struct sip_ctrans *ct, const struct sip_msg *msg, vo
 	case PROCEEDING:
 		if (msg->scode < 200) {
 			ct->state = PROCEEDING;
-			ct->resph(0, msg, ct->arg, NULL, NULL);
+			ct->resph(0, msg, ct->arg, NULL);
 		}
 		else if (msg->scode < 300) {
-			ct->resph(0, msg, ct->arg, user1, user2);
+			ct->resph(0, msg, ct->arg, user_data);
 			mem_deref(ct);
 		}
 		else {
@@ -236,7 +236,7 @@ static void invite_response(struct sip_ctrans *ct, const struct sip_msg *msg, vo
 			(void)sip_send(ct->sip, NULL, ct->tp, &ct->dst,
 				       ct->mb_ack);
 
-			ct->resph(0, msg, ct->arg, NULL, NULL);
+			ct->resph(0, msg, ct->arg, NULL);
 
 			if (sip_transp_reliable(ct->tp)) {
 				mem_deref(ct);
@@ -260,7 +260,7 @@ static void invite_response(struct sip_ctrans *ct, const struct sip_msg *msg, vo
 }
 
 
-static bool response_handler(const struct sip_msg *msg, void *arg, void *user1, void *user2)
+static bool response_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sip_ctrans *ct;
 	struct sip *sip = arg;
@@ -272,7 +272,7 @@ static bool response_handler(const struct sip_msg *msg, void *arg, void *user1, 
 		return false;
 
 	if (ct->invite) {
-		invite_response(ct, msg, user1, user2);
+		invite_response(ct, msg, user_data);
 		return true;
 	}
 
@@ -282,11 +282,11 @@ static bool response_handler(const struct sip_msg *msg, void *arg, void *user1, 
 	case PROCEEDING:
 		if (msg->scode < 200) {
 			ct->state = PROCEEDING;
-			ct->resph(0, msg, ct->arg, NULL, NULL);
+			ct->resph(0, msg, ct->arg, NULL);
 		}
 		else {
 			ct->state = COMPLETED;
-			ct->resph(0, msg, ct->arg, NULL, NULL);
+			ct->resph(0, msg, ct->arg, NULL);
 
 			if (sip_transp_reliable(ct->tp)) {
 				mem_deref(ct);

@@ -273,14 +273,14 @@ static int reply_recv(struct dnsc *dnsc, struct mbuf *mb)
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	(void)src;
 	(void)reply_recv(arg, mb);
 }
 
 
-static void tcp_recv_handler(struct mbuf *mbrx, void *arg)
+static void tcp_recv_handler(struct mbuf *mbrx, void *arg, void *user_data)
 {
 	struct tcpconn *tc = arg;
 	struct mbuf *mb = tc->mb;

@@ -92,8 +92,7 @@ static void msg_recv(struct nat_hairpinning *nh, int proto, void *sock,
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb,
-			     void *arg)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_data)
 {
 	struct nat_hairpinning *nh = arg;
 
@@ -132,7 +131,7 @@ static int hairpin_send(struct nat_hairpinning *nh, const struct sa *srv)
  */
 
 
-static void tcp_recv_handler2(struct mbuf *mb, void *arg)
+static void tcp_recv_handler2(struct mbuf *mb, void *arg, void *user_data)
 {
 	struct nat_hairpinning *nh = arg;
 
@@ -223,7 +222,7 @@ static void tcp_estab_handler(void *arg)
 }
 
 
-static void tcp_recv_handler(struct mbuf *mb, void *arg)
+static void tcp_recv_handler(struct mbuf *mb, void *arg, void *user_data)
 {
 	struct nat_hairpinning *nh = arg;
 	int err;

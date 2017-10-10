@@ -161,7 +161,7 @@ static void ack_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 
 	if (awaiting_answer) {
 		sess->awaiting_answer = false;
-		err = sess->answerh(msg, sess->arg);
+		err = sess->answerh(msg, sess->arg, NULL);
 	}
 
 	if (sess->modify_pending && !sess->replyl.head)
@@ -240,7 +240,7 @@ static void invite_handler(struct sipsess_sock *sock,
 }
 
 
-static bool request_handler(const struct sip_msg *msg, void *arg)
+static bool request_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipsess_sock *sock = arg;
 
@@ -278,7 +278,7 @@ static bool request_handler(const struct sip_msg *msg, void *arg)
 }
 
 
-static bool response_handler(const struct sip_msg *msg, void *arg)
+static bool response_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct sipsess_sock *sock = arg;
 
