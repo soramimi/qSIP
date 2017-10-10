@@ -1,3 +1,7 @@
+#ifdef UNICODE
+#undef UNICODE
+#endif
+
 /**
  * @file win32/srv.c  Get DNS Server IP code for Windows
  *
@@ -6,6 +10,12 @@
 #include <re_types.h>
 #include <winsock2.h>
 #include <iphlpapi.h>
+
+#ifdef TEXT
+#undef TEXT
+#endif
+#define TEXT(T) T
+
 #include <io.h>
 #include <re_fmt.h>
 #include <re_mbuf.h>
@@ -14,11 +24,9 @@
 #include <re_dns.h>
 #include "../dns.h"
 
-
 #define DEBUG_MODULE "win32/srv"
 #define DEBUG_LEVEL 5
 #include <re_dbg.h>
-
 
 int get_windns(char *domain, size_t dsize, struct sa *srvv, uint32_t *n)
 {

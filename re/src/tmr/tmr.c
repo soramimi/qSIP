@@ -43,6 +43,7 @@ extern struct list *tmrl_get(void);
 static bool inspos_handler(struct le *le, void *arg)
 {
 	struct tmr *tmr = le->data;
+	if (!tmr) return false;
 	const uint64_t now = *(uint64_t *)arg;
 
 	return tmr->jfs <= now;

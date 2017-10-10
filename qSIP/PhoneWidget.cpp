@@ -13,7 +13,6 @@ enum {
 
 struct PhoneWidget::Private {
 	std::shared_ptr<PhoneThread> phone;
-	bool shutdown = false;
 	QTime registration_time;
 	int registration_seconds = 0;
 	QString dtmf;
@@ -47,7 +46,6 @@ PhoneWidget::~PhoneWidget()
 
 void PhoneWidget::close()
 {
-	m->shutdown = true;
 	if (m->phone) {
 		m->phone->close();
 	}
@@ -69,7 +67,6 @@ void PhoneWidget::setup(SIP::Account const &account)
 	m->phone->setAccount(account);
 
 	connect(m->phone.get(), SIGNAL(registered(bool)), this, SLOT(onRegistered(bool)));
-	connect(m->phone.get(), SIGNAL(unregistering()), this, SLOT(onUnregistering()));
 	connect(m->phone.get(), SIGNAL(state_changed(int)), this, SLOT(onStateChanged(int)));
 	connect(m->phone.get(), SIGNAL(call_incoming(QString)), this, SLOT(onCallIncoming(QString)));
 	connect(m->phone.get(), SIGNAL(incoming_established()), this, SLOT(onIncomingEstablished()));
@@ -77,7 +74,6 @@ void PhoneWidget::setup(SIP::Account const &account)
 	connect(m->phone.get(), SIGNAL(closed(int)), this, SLOT(onClosed(int)));
 	connect(m->phone.get(), SIGNAL(dtmf_input(QString)), this, SLOT(onDTMF(QString)));
 
-	m->shutdown = false;
 	m->phone->start();
 
 	m->registration_seconds = 0;
@@ -120,8 +116,6 @@ bool PhoneWidget::isRegistered() const
 
 void PhoneWidget::updateRegistrationStatus()
 {
-	if (m->shutdown) return;
-
 	if (isRegistered()) {
 		QString s = "%1 Ready.";
 		s = s.arg(m->phone->account().user);
@@ -139,8 +133,6 @@ void PhoneWidget::updateRegistrationStatus()
 
 void PhoneWidget::updateUI()
 {
-	if (m->shutdown) return;
-
 	bool idle = m->phone && m->phone->peerNumber().isEmpty();
 	if (idle) {
 		setStatusText(QString());
@@ -172,12 +164,7 @@ void PhoneWidget::onRegistered(bool f)
 	updateUI();
 }
 
-void PhoneWidget::onUnregistering()
-{
-	if (!m->shutdown) {
-		restart();
-	}
-}
+
 
 void PhoneWidget::onCallIncoming(QString const &from)
 {

@@ -218,14 +218,14 @@ static struct re *re_get(void)
  * @param fd     File descriptor
  * @param flags  Event flags
  */
-static void fd_handler(struct re *re, int fd, int flags, void *user_extra_data)
+static void fd_handler(struct re *re, int fd, int flags, void *user1, void *user2)
 {
 	const uint64_t tick = tmr_jiffies();
 	uint32_t diff;
 
 	DEBUG_INFO("event on fd=%d (flags=0x%02x)...\n", fd, flags);
 
-	re->fhs[fd].fh(flags, re->fhs[fd].arg, user_extra_data);
+	re->fhs[fd].fh(flags, re->fhs[fd].arg, user1, user2);
 
 	diff = (uint32_t)(tmr_jiffies() - tick);
 
@@ -551,7 +551,7 @@ void fd_close(int fd)
  *
  * @return 0 if success, otherwise errorcode
  */
-static int fd_poll(struct re *re, void *user_extra_data)
+static int fd_poll(struct re *re, void *user1, void *user2)
 {
 	uint64_t to = tmr_next_timeout(&re->tmrl);
 	int i, n;
@@ -690,7 +690,7 @@ static int fd_poll(struct re *re, void *user_extra_data)
 
 		if (re->fhs[fd].fh) {
 #if MAIN_DEBUG
-			fd_handler(re, fd, flags, user_extra_data);
+			fd_handler(re, fd, flags, user1, user2);
 #else
 			re->fhs[fd].fh(flags, re->fhs[fd].arg);
 #endif
@@ -784,7 +784,7 @@ static void signal_handler(int sig)
  *
  * @return 0 if success, otherwise errorcode
  */
-int re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user_extra_data)
+int re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user1, void *user2)
 {
 	struct re *re = re_get();
 	int err;
@@ -833,10 +833,10 @@ int re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user_
 			break;
 		}
 
-		err = fd_poll(re, user_extra_data);
+		err = fd_poll(re, user1, user2);
 		if (err) {
-			if (err == EINTR) continue;
-			if (err == ENOENT) continue;
+			if (EINTR == err) continue;
+			if (ENOENT == err) continue;
 
 #ifdef DARWIN
 			/* NOTE: workaround for Darwin */

@@ -21,10 +21,6 @@ extern "C" {
 #include <stdint.h>
 
 typedef void (*user_filter_fn)(void *cookie, int16_t *ptr, int len);
-struct user_extra_data_t {
-	user_filter_fn audio_source_filter_fn;
-	void *cookie;
-};
 
 /* forward declarations */
 struct sa;
@@ -122,7 +118,7 @@ struct audio *paging_audio(const struct paging_tx *paging);
 /** Defines the configuration line handler */
 typedef int (confline_h)(const struct pl *addr);
 
-int  conf_configure(void);
+//int  conf_configure(void);
 int  conf_modules(void);
 int configure(void);
 int load_module2(struct mod **modp, const struct pl *name);
@@ -172,8 +168,6 @@ struct config {
 		char play_dev[128];     /**< Audio playback device          */
 		char alert_mod[16];     /**< Audio alert module             */
 		char alert_dev[128];    /**< Audio alert device             */
-		char ring_mod[16];      /**< Audio module for incoming ring */
-		char ring_dev[128];     /**< Audio device for incoming ring */
 		struct range srate;     /**< Audio sampling rate in [Hz]    */
 		struct range channels;  /**< Nr. of audio channels (1=mono) */
 		uint32_t srate_play;    /**< Opt. sampling rate for player  */
@@ -328,7 +322,7 @@ const struct ausrc *ausrc_find(const char *name);
 int ausrc_alloc(struct ausrc_st **stp, struct media_ctx **ctx,
 		const char *name,
 		struct ausrc_prm *prm, const char *device,
-		ausrc_read_h *rh, ausrc_error_h *errh, void *arg, struct user_extra_data_t *user_extra_data);
+		ausrc_read_h *rh, ausrc_error_h *errh, void *arg, user_filter_fn user1, void *user2);
 
 
 /*
@@ -468,8 +462,8 @@ struct dnsc     *net_dnsc(void);
 
 struct play;
 
-int  play_file(struct play **playp, const char *mod, const char *dev, const char *filename, int repeat);
-int  play_tone(struct play **playp, const char *mod, const char *dev, struct mbuf *tone,
+int  play_file(struct play **playp, const char *filename, int repeat);
+int  play_tone(struct play **playp, struct mbuf *tone,
 	       uint32_t srate, uint8_t ch, int repeat);
 void play_init(const struct config *cfg);
 void play_close(void);
@@ -500,8 +494,6 @@ enum ua_event {
 	UA_EVENT_CALL_TRANSFER_FAILED,
 	UA_EVENT_CALL_DTMF_START,
 	UA_EVENT_CALL_DTMF_END,
-	UA_EVENT_CALL_TRANSFER,
-	UA_EVENT_CALL_TRANSFER_OOD,	///< transfer (incoming REFER) outside of dialog 
 
 	UA_EVENT_MAX,
 };
@@ -524,7 +516,7 @@ int  ua_connect(struct ua *ua, struct call **callp,
 		const char *params, enum vidmode vmode);
 void ua_hangup(struct ua *ua, struct call *call,
 	       uint16_t scode, const char *reason);
-int  ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, struct user_extra_data_t *user_extra_data);
+int  ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2);
 int  ua_options_send(struct ua *ua, const char *uri,
 		     options_resp_h *resph, void *arg);
 int  ua_sipfd(const struct ua *ua);
@@ -537,7 +529,7 @@ void ua_unregister(struct ua *ua);
 bool ua_isregistered(const struct ua *ua);
 unsigned int ua_regint(const struct ua *ua);
 int	ua_reregister(struct ua *ua);
-int ua_play_file(struct ua *ua, const char *audio_mod, const char *audio_dev, const char *filename, int repeat);
+int ua_play_file(struct ua *ua, const char *filename, int repeat);
 int ua_play_stop(struct ua *ua);
 const char     *ua_aor(const struct ua *ua);
 const char     *ua_cuser(const struct ua *ua);

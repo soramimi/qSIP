@@ -42,7 +42,7 @@ void  fd_debug(void);
 int   libre_init(void);
 void  libre_close(void);
 
-int   re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user_extra_data);
+int   re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user1, void *user2);
 void  re_cancel(void);
 int   re_debug(struct re_printf *pf, void *unused);
 

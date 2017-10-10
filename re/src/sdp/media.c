@@ -763,7 +763,8 @@ struct sdp_format *sdp_media_format(const struct sdp_media *m,
 				    int pt, const char *name,
 				    int32_t srate, int8_t ch)
 {
-	return sdp_media_format_apply(m, local, id, pt, name, srate, ch, NULL, NULL);
+	return sdp_media_format_apply(m, local, id, pt, name, srate, ch,
+				      NULL, NULL);
 }
 
 

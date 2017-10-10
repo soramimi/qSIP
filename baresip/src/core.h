@@ -125,10 +125,10 @@ int audio_alloc2(struct audio **ap, const struct config *cfg,
 		struct sdp_media * sdp,
 		uint32_t ptime,
 		audio_event_h *eventh, audio_err_h *errh, void *arg);
-int  audio_start(struct audio *a, struct user_extra_data_t *user_extra_data);
+int  audio_start(struct audio *a, user_filter_fn user1, void *user2);
 void audio_stop(struct audio *a);
 int  audio_encoder_set(struct audio *a, const struct aucodec *ac,
-			   int pt_tx, const char *params, struct user_extra_data_t *user_extra_data);
+		       int pt_tx, const char *params, user_filter_fn user1, void *user2);
 int  audio_decoder_set(struct audio *a, const struct aucodec *ac,
 		       int pt_rx, const char *params);
 struct stream *audio_strm(const struct audio *a);
@@ -169,7 +169,7 @@ int  call_accept(struct call *call, struct sipsess_sock *sess_sock,
 		 const struct sip_msg *msg);
 int  call_hangup(struct call *call, uint16_t scode, const char *reason);
 int  call_progress(struct call *call);
-int  call_answer(struct call *call, uint16_t scode, const char *audio_mod, const char *audio_dev, struct user_extra_data_t *user_extra_data);
+int  call_answer(struct call *call, uint16_t scode, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2);
 int  call_sdp_get(const struct call *call, struct mbuf **descp, bool offer);
 int  call_jbuf_stat(struct re_printf *pf, const struct call *call);
 int  call_info(struct re_printf *pf, const struct call *call);

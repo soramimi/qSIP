@@ -171,6 +171,8 @@ const char* inet_ntop(int af, const void *src, char *dst, size_t size)
 }
 #endif
 
+#endif
+
 
 /*
  *  POSIX  1003.1-2001 marks gethostbyaddr() and gethostbyname() obsolescent.
@@ -210,4 +212,3 @@ int net_inet_ntop(const struct sa *sa, char *buf, int size)
 
 	return 0;
 }
-#endif

@@ -10,7 +10,7 @@ struct PhoneThread::Private {
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
 	struct call *call = nullptr;
-	user_extra_data_t user_extra_data;
+//	user_extra_data_t user_extra_data;
 	SIP::Account account;
 	QString peer_number;
 	VoicePtr voice;
@@ -283,12 +283,12 @@ void PhoneThread::run()
 		ua_init(uaName(), false, true, true, true, false);
 		ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
 	}
-	m->user_extra_data.audio_source_filter_fn = custom_filter_handler;
-	m->user_extra_data.cookie = this;
+//	m->user_extra_data.audio_source_filter_fn = custom_filter_handler;
+//	m->user_extra_data.cookie = this;
 	setState(PhoneState::Idle);
 
 	while (1) {
-		int r = re_main(signal_handler, control_handler, &m->user_extra_data);
+		int r = re_main(signal_handler, control_handler, custom_filter_handler, this);
 		if (r == EINTR || r == ENOENT) {
 			// continue
 		} else {
@@ -308,6 +308,8 @@ void PhoneThread::close()
 	if (!wait(3000)) {
 		terminate();
 	}
+	m->ua = nullptr;
+	m->call = nullptr;
 }
 
 void PhoneThread::hangup()
@@ -357,7 +359,7 @@ void PhoneThread::custom_filter_handler(void *cookie, int16_t *ptr, int len)
 
 void PhoneThread::answer()
 {
-	ua_answer(m->ua, nullptr, 0, nullptr, nullptr);
+	ua_answer(m->ua, nullptr, 0, nullptr, nullptr, nullptr);
 }
 
 void PhoneThread::hold(bool f)

@@ -229,7 +229,7 @@ static void conn_keepalive_handler(void *arg)
 }
 
 
-static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user_extra_data)
+static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user1, void *user2)
 {
 	struct le *le = sip->lsnrl.head;
 
@@ -246,7 +246,7 @@ static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user_extr
 		if (msg->req != lsnr->req)
 			continue;
 
-		if (lsnr->msgh(msg, lsnr->arg, user_extra_data))
+		if (lsnr->msgh(msg, lsnr->arg, user1, user2))
 			return;
 	}
 
@@ -269,7 +269,7 @@ static void sip_recv(struct sip *sip, const struct sip_msg *msg, void *user_extr
 }
 
 
-static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user_extra_data)
+static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, void *user1, void *user2)
 {
 	struct sip_transport *transp = arg;
 	struct stun_unknown_attr ua;
@@ -320,7 +320,7 @@ static void udp_recv_handler(const struct sa *src, struct mbuf *mb, void *arg, v
 	msg->dst = transp->laddr;
 	msg->tp = SIP_TRANSP_UDP;
 
-	sip_recv(transp->sip, msg, user_extra_data);
+	sip_recv(transp->sip, msg, user1, user2);
 
 	mem_deref(msg);
 }
@@ -422,7 +422,7 @@ static void tcp_recv_handler(struct mbuf *mb, void *arg)
 		msg->dst = conn->laddr;
 		msg->tp = conn->sc ? SIP_TRANSP_TLS : SIP_TRANSP_TCP;
 
-		sip_recv(conn->sip, msg, NULL);
+		sip_recv(conn->sip, msg, NULL, NULL);
 		mem_deref(msg);
 
 		if (end <= conn->mb->end) {

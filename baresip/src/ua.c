@@ -256,11 +256,11 @@ int ua_reregister(struct ua *ua)
 	return ua_register(ua);
 }
 
-int ua_play_file(struct ua *ua, const char *audio_mod, const char *audio_dev, const char *filename, int repeat)
+int ua_play_file(struct ua *ua, const char *filename, int repeat)
 {
 	if (!ua)
 		return EINVAL;
-	return play_file(&ua->play, audio_mod, audio_dev, filename, repeat);
+	return play_file(&ua->play, filename, repeat);
 }
 
 int ua_play_stop(struct ua *ua)
@@ -289,7 +289,6 @@ static void call_event_handler(struct call *call, enum call_event ev,
 	struct ua *ua = arg;
 	const char *peeruri;
 	struct call *call2 = NULL;
-	struct config * cfg = conf_config();	
 	int err;
 
 	MAGIC_CHECK(ua);
@@ -309,7 +308,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 			break;
 
 		case ANSWERMODE_AUTO:
-			(void)call_answer(call, 200, "", "", NULL);
+			(void)call_answer(call, 200, "", "", NULL, NULL);
 			break;
 
 		case ANSWERMODE_MANUAL:
@@ -334,7 +333,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 		break;
 
 	case CALL_EVENT_RINGING:
-		(void)play_file(&ua->play, cfg->audio.alert_mod, cfg->audio.alert_dev, "ringback.wav", -1);
+		(void)play_file(&ua->play, "ringback.wav", -1);
 
 		ua_event(ua, UA_EVENT_CALL_RINGING, call, peeruri);
 		break;
@@ -358,7 +357,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 			const char *tone;
 			tone = translate_errorcode(call_scode(call));
 			if (tone)
-				(void)play_file(&ua->play, cfg->audio.alert_mod, cfg->audio.alert_dev, tone, 1);
+				(void)play_file(&ua->play, tone, 1);
 		}
 		ua_event(ua, UA_EVENT_CALL_CLOSED, call, str);
 		mem_deref(call);
@@ -386,9 +385,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 			if (err) {
 				DEBUG_WARNING("transfer: connect error: %m\n",
 					      err);
-			} else {
-				ua_event(ua, UA_EVENT_CALL_TRANSFER, call2, str);
-            }
+			}
 		}
 
 		if (err) {
@@ -484,41 +481,6 @@ static void handle_options(struct ua *ua, const struct sip_msg *msg)
 }
 
 
-static void handle_refer(struct ua *ua, const struct sip_msg *msg)
-{
-	int err;
-	const struct sip_hdr *hdr;
-	char refer_target[128];
-
-	/* get the transfer target */
-	hdr = sip_msg_hdr(msg, SIP_HDR_REFER_TO);
-	if (!hdr) {
-		DEBUG_WARNING("bad REFER request from %r\n", &msg->from.auri);
-		(void)sip_treply(NULL, NULL, msg, 400, "Missing Refer-To header");
-		return;
-	}
-
-	err = sip_treply(NULL, uag.sip, msg, 202, "Accepted");
-
-	/*
-	If a REFER request is accepted (that is, a 2xx class response is
-	returned), the recipient MUST create a subscription and send
-	notifications of the status of the refer
-	*/
-	{
-	int TODO__CREATE_SUBSCRIPTION_FOR_OOD_REFER;
-    }
-
-	if (err) {
-		DEBUG_WARNING("options: sip_treply: %m\n", err);
-	}
-
-	(void)re_snprintf(refer_target, sizeof(refer_target), "%r", &hdr->val);
-	ua_event(ua, UA_EVENT_CALL_TRANSFER_OOD, NULL, refer_target);
-}
-
-
-
 static void ua_destructor(void *arg)
 {
 	struct ua *ua = arg;
@@ -546,29 +508,18 @@ static bool request_handler(const struct sip_msg *msg, void *arg)
 
 	(void)arg;
 
-	if (pl_strcmp(&msg->met, "OPTIONS") == 0) {
-		ua = uag_find(&msg->uri.user);
-		if (!ua) {
-			(void)sip_treply(NULL, uag_sip(), msg, 404, "Not Found");
-			return true;
-		}
-		handle_options(ua, msg);
-		return true;
-	} else if (pl_strcmp(&msg->met, "REFER") == 0) {
-		if (pl_isset(&msg->to.tag)) {
-			// handling only out-of-dialog REFER here, leaving to session handler
-			return false;	
-		}
-		ua = uag_find(&msg->uri.user);
-		if (!ua) {
-			(void)sip_treply(NULL, uag_sip(), msg, 404, "Not Found");
-			return true;
-		}		
-		handle_refer(ua, msg);	// 403 Forbidden or 202 Accepted depending on configuration
+	if (pl_strcmp(&msg->met, "OPTIONS"))
+		return false;
+
+	ua = uag_find(&msg->uri.user);
+	if (!ua) {
+		(void)sip_treply(NULL, uag_sip(), msg, 404, "Not Found");
 		return true;
 	}
 
-	return false;
+	handle_options(ua, msg);
+
+	return true;
 }
 
 
@@ -842,7 +793,7 @@ void ua_hangup(struct ua *ua, struct call *call,
  *
  * @return 0 if success, otherwise errorcode
  */
-int ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, struct user_extra_data_t *user_extra_data)
+int ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const char *audio_dev, user_filter_fn user1, void *user2)
 {
 	if (!ua)
 		return EINVAL;
@@ -859,7 +810,7 @@ int ua_answer(struct ua *ua, struct call *call, const char *audio_mod, const cha
 
 	ua->play = mem_deref(ua->play);
 
-	return call_answer(call, 200, audio_mod, audio_dev, user_extra_data);
+	return call_answer(call, 200, audio_mod, audio_dev, user1, user2);
 }
 
 
@@ -1480,7 +1431,6 @@ const char *uag_event_str(enum ua_event ev)
 	case UA_EVENT_CALL_PROGRESS:    return "CALL_PROGRESS";
 	case UA_EVENT_CALL_ESTABLISHED: return "CALL_ESTABLISHED";
 	case UA_EVENT_CALL_CLOSED:      return "CALL_CLOSED";
-	case UA_EVENT_CALL_TRANSFER:	return "CALL_TRANSFER";
 	default: return "?";
 	}
 }

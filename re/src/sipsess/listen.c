@@ -221,7 +221,8 @@ static void reinvite_handler(struct sipsess_sock *sock,
 	}
 
 	(void)sip_dialog_update(sess->dlg, msg);
-	(void)sipsess_reply_2xx(sess, msg, 200, "OK", desc, NULL, NULL);
+	(void)sipsess_reply_2xx(sess, msg, 200, "OK", desc,
+				NULL, NULL);
 
 	/* pending modifications considered outdated;
 	   sdp may have changed in above exchange */

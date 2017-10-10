@@ -160,7 +160,13 @@ static int encode(struct aufilt_enc_st *st, int16_t *sampv, size_t *sampc)
 	(void)wr;
 
 	for (i=0; i<*sampc; i++) {
-		sampv[i] = saturate_s16(((int32_t)sampv[i] * softvol_tx) / SOFTVOL_BASE);
+		int32_t val1 = sampv[i];
+		int32_t val2 = val1 * softvol_tx;
+    	int32_t val3 = val2 /SOFTVOL_BASE;
+		int32_t val4 = ((int32_t)(sampv[i])) * softvol_tx;
+    	int32_t val5 = val4 / SOFTVOL_BASE;
+		int32_t val = ( ((int32_t)(sampv[i])) * softvol_tx ) / SOFTVOL_BASE;
+		sampv[i] = saturate_s16(val);
 	}
 
 	return 0;
@@ -178,6 +184,7 @@ static int decode(struct aufilt_dec_st *st, int16_t *sampv, size_t *sampc)
 	(void)wr;
 
 	for (i=0; i<*sampc; i++) {
+		//sampv[i] = ((int32_t)sampv[i] * softvol_rx) / SOFTVOL_BASE;
 		sampv[i] = saturate_s16(((int32_t)sampv[i] * softvol_rx) / SOFTVOL_BASE);
 	}
 
