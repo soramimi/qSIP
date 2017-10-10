@@ -75,10 +75,13 @@ public:
 	bool isEndOfVoice() const;
 	struct ua *ua();
 	QString peerNumber() const;
+	bool reregister();
+
 protected:
 	void run();
 signals:
 	void registered(bool reg);
+	void unregistering();
 	void call_incoming(QString const &from);
 	void closed(int dir);
 	void incoming_established();

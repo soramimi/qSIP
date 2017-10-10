@@ -60,6 +60,7 @@ private slots:
 	void onClosed(int dir);
 	void onDTMF(const QString &text);
 	void onStateChanged(int state);
+	void onUnregistering();
 private:
 	Ui::PhoneWidget *ui;
 	void setRegistrationStatusText(const QString &text);
@@ -68,6 +69,7 @@ private:
 	void setStatusText(const QString &text);
 
 	void updateUI();
+	void restart();
 protected:
 	void timerEvent(QTimerEvent *event);
 };

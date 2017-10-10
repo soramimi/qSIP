@@ -70,6 +70,16 @@ QString PhoneThread::peerNumber() const
 	return m->peer_number;
 }
 
+bool PhoneThread::reregister()
+{
+	if (m->ua) {
+		if (ua_reregister(m->ua) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool PhoneThread::isRegistered() const
 {
 	return ua_isregistered(m->ua);
@@ -158,6 +168,9 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, struct call *call, const c
 		break;
 	case UA_EVENT_UNREGISTER_OK:
 		emit registered(false);
+		break;
+	case UA_EVENT_UNREGISTERING:
+		emit unregistering();
 		break;
 	case UA_EVENT_CALL_INCOMING:
 		setState(PhoneState::Incoming);
@@ -257,8 +270,7 @@ void PhoneThread::run()
 
 	configure();
 
-	int r = 0;
-	r = uag_event_register(event_handler, this);
+	uag_event_register(event_handler, this);
 
 	if (m->account.server.isEmpty()) {
 		// nop
@@ -268,13 +280,21 @@ void PhoneThread::run()
 				.arg(m->account.user)
 				.arg(makeServerAddress(m->account))
 				;
-		r = ua_init(uaName(), false, true, true, true, false);
-		r = ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
+		ua_init(uaName(), false, true, true, true, false);
+		ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
 	}
 	m->user_extra_data.audio_source_filter_fn = custom_filter_handler;
 	m->user_extra_data.cookie = this;
 	setState(PhoneState::Idle);
-	re_main(signal_handler, control_handler, &m->user_extra_data);
+
+	while (1) {
+		int r = re_main(signal_handler, control_handler, &m->user_extra_data);
+		if (r == EINTR || r == ENOENT) {
+			// continue
+		} else {
+			break;
+		}
+	}
 
 	ua_close();
 	mod_close();
