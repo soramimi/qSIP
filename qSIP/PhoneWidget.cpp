@@ -18,6 +18,10 @@ struct PhoneWidget::Private {
 	QString dtmf;
 	QTime calling_time;
 	int calling_timeout_sec = 30;
+	bool answer_enabled = true;
+
+	handler_fn_t outgoing_established_handler_fn;
+	handler_fn_t closed_handler_fn;
 };
 
 PhoneWidget::PhoneWidget(QWidget *parent)
@@ -48,6 +52,11 @@ void PhoneWidget::close()
 	m->phone.reset();
 }
 
+void PhoneWidget::hangup()
+{
+	if (m->phone) m->phone->hangup();
+}
+
 void PhoneWidget::setup(SIP::Account const &account)
 {
 	close();
@@ -75,6 +84,17 @@ void PhoneWidget::setup(SIP::Account const &account)
 void PhoneWidget::setCallingTimeout(int sec)
 {
 	m->calling_timeout_sec = sec;
+}
+
+void PhoneWidget::enableAnswer(bool f)
+{
+	m->answer_enabled = f;
+	updateUI();
+}
+
+void PhoneWidget::setText(QString const &text)
+{
+	ui->lineEdit_phone_number->setText(text);
 }
 
 void PhoneWidget::setRegistrationStatusText(QString const &text)
@@ -115,7 +135,7 @@ void PhoneWidget::updateUI()
 	if (idle) {
 		setStatusText(QString());
 	}
-	ui->toolButton_answer->setEnabled(idle);
+	ui->toolButton_answer->setEnabled(m->answer_enabled && idle);
 	updateRegistrationStatus();
 }
 
@@ -152,6 +172,8 @@ void PhoneWidget::onCallIncoming(QString const &from)
 
 void PhoneWidget::onIncomingEstablished()
 {
+	m->dtmf.clear();
+
 	QString s = "Incoming call established from %1";
 	s = s.arg(m->phone->account().user);
 	setStatusText(s);
@@ -159,9 +181,30 @@ void PhoneWidget::onIncomingEstablished()
 
 void PhoneWidget::onOutgoingEstablished()
 {
+	m->dtmf.clear();
+
 	QString s = "Outgoing call established to %1";
 	s = s.arg(m->phone->peerNumber());
 	setStatusText(s);
+
+	if (m->outgoing_established_handler_fn) {
+		m->outgoing_established_handler_fn();
+	}
+}
+
+void PhoneWidget::setOutgoingEstablishedHandler(std::function<void ()> handler)
+{
+	m->outgoing_established_handler_fn = handler;
+}
+
+void PhoneWidget::setClosedHandler(std::function<void ()> handler)
+{
+	m->closed_handler_fn = handler;
+}
+
+QString PhoneWidget::dtmftext() const
+{
+	return m->dtmf;
 }
 
 void PhoneWidget::onClosed(int dir)
@@ -169,6 +212,10 @@ void PhoneWidget::onClosed(int dir)
 	setStatusText(QString());
 	ui->checkBox_hold->setChecked(false);
 	updateUI();
+
+	if (m->closed_handler_fn) {
+		m->closed_handler_fn();
+	}
 }
 
 void PhoneWidget::onDTMF(QString const &text)
@@ -256,22 +303,28 @@ void PhoneWidget::on_toolButton_pad_sharp_clicked()
 
 void PhoneWidget::on_toolButton_hangup_clicked()
 {
-	if (!m->phone) return;
-	m->phone->hangup();
+	hangup();
 	setStatusText(QString());
 }
 
-void PhoneWidget::on_toolButton_call_clicked()
+void PhoneWidget::call(QString const &to)
 {
-	if (!m->phone) return;
-	QString text = ui->lineEdit_phone_number->text();
-	if (m->phone->call(text)) {
+	m->dtmf.clear();
+
+	if (m->phone->call(to)) {
 		m->calling_time.start();
 		QString s = "Calling to %1";
 		s = s.arg(m->phone->peerNumber());
 		setStatusText(s);
 	}
 	updateUI();
+}
+
+void PhoneWidget::on_toolButton_call_clicked()
+{
+	if (!m->phone) return;
+	QString text = ui->lineEdit_phone_number->text();
+	call(text);
 }
 
 void PhoneWidget::on_toolButton_answer_clicked()
@@ -296,9 +349,12 @@ void PhoneWidget::timerEvent(QTimerEvent *event)
 			if (m->calling_time.isValid()) {
 				int s = m->calling_time.elapsed() / 1000;
 				if (s >= m->calling_timeout_sec) {
-					m->phone->hangup();
+					hangup();
 				}
 			}
+		}
+		if (m->phone->voice() && m->phone->isEndOfVoice()) {
+			hangup();
 		}
 	} else {
 		int elapsed = m->registration_time.elapsed() / 1000;
@@ -307,4 +363,9 @@ void PhoneWidget::timerEvent(QTimerEvent *event)
 			updateUI();
 		}
 	}
+}
+
+void PhoneWidget::setVoice(VoicePtr voice)
+{
+	m->phone->setVoice(voice);
 }

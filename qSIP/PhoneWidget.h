@@ -2,12 +2,15 @@
 #define PHONEWIDGET_H
 
 #include "Account.h"
-
+#include "PhoneThread.h"
 #include <QWidget>
+#include <functional>
 
 namespace Ui {
 class PhoneWidget;
 }
+
+typedef std::function<void(void)> handler_fn_t;
 
 class PhoneWidget : public QWidget
 {
@@ -24,6 +27,14 @@ public:
 	bool isRegistered() const;
 	void close();
 	void setCallingTimeout(int sec);
+	void enableAnswer(bool f);
+	void setText(QString const &text);
+	void setVoice(VoicePtr voice);
+	void hangup();
+	void call(const QString &to);
+	void setOutgoingEstablishedHandler(std::function<void ()> handler);
+	void setClosedHandler(std::function<void ()> handler);
+	QString dtmftext() const;
 private slots:
 	void on_toolButton_clear_clicked();
 	void on_toolButton_pad_0_clicked();
