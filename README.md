@@ -16,6 +16,7 @@ This program used the following libraries.
 - portaudio
 - g722
 - gsm
+- baresip
 
 These are distributed under BSD-like license or public domain. For details, please see each project COPYING file.
 
