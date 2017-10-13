@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>image/clear.png</file>
+        <file>image/answer.svg</file>
+        <file>image/call.svg</file>
+        <file>image/hangup.svg</file>
     </qresource>
 </RCC>
