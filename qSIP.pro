@@ -13,6 +13,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += $$PWD/baresip/include
 INCLUDEPATH += $$PWD/re/include
+INCLUDEPATH += $$PWD/qSIP
 
 LIBS += -L$$PWD/_build -lws2_32 -liphlpapi -lwinmm
 Release:LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722
