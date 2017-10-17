@@ -16,12 +16,13 @@ struct PhoneWidget::Private {
 	QTime registration_time;
 	int registration_seconds = 0;
 	QString dtmf;
-	QTime calling_time;
-	int calling_timeout_sec = 30;
+	QTime ringing_time;
+	int ringing_timeout_sec = 30;
 	bool answer_enabled = true;
 
 	handler_fn_t outgoing_established_handler_fn;
 	handler_fn_t closed_handler_fn;
+	handler_fn_t absence_handler_fn;
 };
 
 PhoneWidget::PhoneWidget(QWidget *parent)
@@ -83,7 +84,7 @@ void PhoneWidget::setup(SIP::Account const &account)
 
 void PhoneWidget::setCallingTimeout(int sec)
 {
-	m->calling_timeout_sec = sec;
+	m->ringing_timeout_sec = sec;
 }
 
 void PhoneWidget::enableAnswer(bool f)
@@ -143,7 +144,7 @@ void PhoneWidget::onStateChanged(int state)
 {
 	PhoneState s = (PhoneState)state;
 	if (s != PhoneState::Outgoing) {
-		m->calling_time = QTime();
+		m->ringing_time = QTime();
 	}
 
 	updateUI();
@@ -198,19 +199,21 @@ void PhoneWidget::onOutgoingEstablished()
 	setStatusText(s);
 
 	if (m->outgoing_established_handler_fn) {
-		m->outgoing_established_handler_fn();
+		m->outgoing_established_handler_fn(true, QString());
 	}
 }
 
-void PhoneWidget::setOutgoingEstablishedHandler(std::function<void ()> handler)
+void PhoneWidget::setOutgoingEstablishedHandler(handler_fn_t handler)
 {
 	m->outgoing_established_handler_fn = handler;
 }
 
-void PhoneWidget::setClosedHandler(std::function<void ()> handler)
+void PhoneWidget::setClosedHandler(handler_fn_t handler)
 {
 	m->closed_handler_fn = handler;
 }
+
+
 
 QString PhoneWidget::dtmftext() const
 {
@@ -224,7 +227,7 @@ void PhoneWidget::onClosed(int dir)
 	updateUI();
 
 	if (m->closed_handler_fn) {
-		m->closed_handler_fn();
+		m->closed_handler_fn(0, QString());
 	}
 }
 
@@ -320,12 +323,13 @@ void PhoneWidget::on_toolButton_hangup_clicked()
 void PhoneWidget::call(QString const &to)
 {
 	m->dtmf.clear();
+	m->ringing_time = QTime();
 
 	if (m->phone->call(to)) {
-		m->calling_time.start();
 		QString s = "Calling to %1";
 		s = s.arg(m->phone->peerNumber());
 		setStatusText(s);
+		m->ringing_time.start();
 	}
 	updateUI();
 }
@@ -356,10 +360,13 @@ void PhoneWidget::timerEvent(QTimerEvent *event)
 {
 	if (isRegistered()) {
 		if (m->phone->state() == PhoneState::Outgoing) {
-			if (m->calling_time.isValid()) {
-				int s = m->calling_time.elapsed() / 1000;
-				if (s >= m->calling_timeout_sec) {
+			if (m->ringing_time.isValid()) {
+				int s = m->ringing_time.elapsed() / 1000;
+				if (s >= m->ringing_timeout_sec) {
 					hangup();
+					if (m->closed_handler_fn) {
+						m->closed_handler_fn(1, "ABSENCE");
+					}
 				}
 			}
 		}

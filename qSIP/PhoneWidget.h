@@ -10,7 +10,7 @@ namespace Ui {
 class PhoneWidget;
 }
 
-typedef std::function<void(void)> handler_fn_t;
+typedef std::function<void (int, QString)> handler_fn_t;
 
 class PhoneWidget : public QWidget
 {
@@ -32,8 +32,8 @@ public:
 	void setVoice(VoicePtr voice);
 	void hangup();
 	void call(const QString &to);
-	void setOutgoingEstablishedHandler(std::function<void ()> handler);
-	void setClosedHandler(std::function<void ()> handler);
+	void setOutgoingEstablishedHandler(handler_fn_t handler);
+	void setClosedHandler(handler_fn_t handler);
 	QString dtmftext() const;
 private slots:
 	void on_toolButton_clear_clicked();
