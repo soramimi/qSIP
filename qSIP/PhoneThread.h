@@ -2,8 +2,6 @@
 #define PHONETHREAD_H
 
 #include <QThread>
-#include <re.h>
-#include "baresip.h"
 #include "Account.h"
 #include "memory"
 
@@ -31,6 +29,12 @@ enum class Direction {
 	None,
 	Incoming,
 	Outgoing,
+};
+
+enum class Condition {
+	None,
+	Absence,
+	Rejected,
 };
 
 class PhoneThread : public QThread {
@@ -83,7 +87,7 @@ signals:
 	void registered(bool reg);
 	void unregistering();
 	void call_incoming(QString const &from);
-	void closed(int dir);
+	void closed(int dir, int condition);
 	void incoming_established();
 	void outgoing_established();
 	void dtmf_input(QString const &text);

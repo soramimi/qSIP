@@ -15,6 +15,7 @@ typedef std::function<void (int, QString)> handler_fn_t;
 class PhoneWidget : public QWidget
 {
 	Q_OBJECT
+public:
 private:
 	struct Private;
 	Private *m;
@@ -57,7 +58,7 @@ private slots:
 	void onCallIncoming(const QString &from);
 	void onIncomingEstablished();
 	void onOutgoingEstablished();
-	void onClosed(int dir);
+	void onClosed(int dir, int reason);
 	void onDTMF(const QString &text);
 	void onStateChanged(int state);
 private:

@@ -2,6 +2,8 @@
 #include <string.h>
 #include <QDebug>
 
+#include <re.h>
+#include "baresip.h"
 
 
 struct PhoneThread::Private {
@@ -204,7 +206,7 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, struct call *call, const c
 	case UA_EVENT_CALL_CLOSED:
 		m->call = nullptr;
 		clearPeerUser();
-		emit closed((int)direction());
+		emit closed((int)direction(), (int)(m->state == PhoneState::Outgoing ? Condition::Rejected : Condition::None));
 		m->direction = Direction::None;
 		setState(PhoneState::Idle);
 		break;

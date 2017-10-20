@@ -70,7 +70,7 @@ void PhoneWidget::setup(SIP::Account const &account)
 	connect(m->phone.get(), SIGNAL(call_incoming(QString)), this, SLOT(onCallIncoming(QString)));
 	connect(m->phone.get(), SIGNAL(incoming_established()), this, SLOT(onIncomingEstablished()));
 	connect(m->phone.get(), SIGNAL(outgoing_established()), this, SLOT(onOutgoingEstablished()));
-	connect(m->phone.get(), SIGNAL(closed(int)), this, SLOT(onClosed(int)));
+	connect(m->phone.get(), SIGNAL(closed(int, int)), this, SLOT(onClosed(int, int)));
 	connect(m->phone.get(), SIGNAL(dtmf_input(QString)), this, SLOT(onDTMF(QString)));
 
 	m->phone->start();
@@ -220,14 +220,19 @@ QString PhoneWidget::dtmftext() const
 	return m->dtmf;
 }
 
-void PhoneWidget::onClosed(int dir)
+void PhoneWidget::onClosed(int dir, int condition)
 {
 	setStatusText(QString());
 	ui->checkBox_hold->setChecked(false);
 	updateUI();
 
+	int cond = 0;
+	QString text;
+	if (condition == (int)Condition::Rejected) {
+		cond = (int)Condition::Rejected;
+	}
 	if (m->closed_handler_fn) {
-		m->closed_handler_fn(0, QString());
+		m->closed_handler_fn(cond, text);
 	}
 }
 
@@ -365,7 +370,7 @@ void PhoneWidget::timerEvent(QTimerEvent *event)
 				if (s >= m->ringing_timeout_sec) {
 					hangup();
 					if (m->closed_handler_fn) {
-						m->closed_handler_fn(1, "ABSENCE");
+						m->closed_handler_fn((int)Condition::Absence, QString());
 					}
 				}
 			}
