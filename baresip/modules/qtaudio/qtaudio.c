@@ -20,7 +20,7 @@ static struct ausrc *ausrc;
 static struct auplay *auplay;
 
 
-static int ww_init(void)
+static int qtaudio_init(void)
 {
 	int play_dev_count, src_dev_count;
 	int err;
@@ -38,7 +38,7 @@ static int ww_init(void)
 }
 
 
-static int ww_close(void)
+static int qtaudio_close(void)
 {
 	ausrc = (struct ausrc *)mem_deref(ausrc);
 	auplay = (struct auplay *)mem_deref(auplay);
@@ -50,6 +50,6 @@ static int ww_close(void)
 EXPORT_SYM const struct mod_export DECL_EXPORTS(qtaudio) = {
 	"qtaudio",
 	"sound",
-	ww_init,
-	ww_close
+	qtaudio_init,
+	qtaudio_close
 };

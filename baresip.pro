@@ -1,9 +1,11 @@
+
+QT       += core multimedia
+
 Release:TARGET = baresip
 Debug:TARGET = baresipd
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle
-CONFIG -= qt
 
 INCLUDEPATH += $$PWD/re/include
 INCLUDEPATH += $$PWD/rem/include
