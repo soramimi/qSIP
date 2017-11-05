@@ -206,12 +206,23 @@ static /* __inline__ */ int top_bit(unsigned int bits)
 {
 	int res;
 
+#if !defined(_WIN32) || (defined(__x86_64__) || defined(_M_X64))
+	res = -1;
+	for (int i = 0; i < 32; i++) {
+		if (bits & 0x80000000) {
+			res = 31 - i;
+			break;
+		}
+		bits <<= 1;
+	}
+#else
 	__asm
-    {
+	{
 		MOV EDX, bits
 		BSR EAX, EDX
 		MOV res, EAX
 	}
+#endif
 
 	return res;
 }
