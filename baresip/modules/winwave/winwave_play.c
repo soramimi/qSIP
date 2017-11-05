@@ -52,19 +52,23 @@ static void auplay_destructor(void *arg)
 	while (st->inuse > 0)
 		Sleep(50);
 
-	waveOutReset(st->waveout);
+	if (st->waveout) {
+		waveOutReset(st->waveout);
+	}
 
 	for (i = 0; i < WRITE_BUFFERS; i++) {
-		waveOutUnprepareHeader(st->waveout, &st->bufs[i].wh,
-					   sizeof(WAVEHDR));
+		if (st->waveout) {
+			waveOutUnprepareHeader(st->waveout, &st->bufs[i].wh, sizeof(WAVEHDR));
+		}
 		mem_deref(st->bufs[i].mb);
 	}
 
-	waveOutClose(st->waveout);
+	if (st->waveout) {
+		waveOutClose(st->waveout);
+	}
 
 	for (i=0; i<100; i++) {
-		if (st->closed)
-			break;
+		if (st->closed) break;
 		Sleep(10);
     }
 
@@ -96,15 +100,19 @@ static int dsp_write(struct auplay_st *st)
 	wh->dwFlags = 0;
 	wh->dwUser = (DWORD_PTR) mb;
 
-	waveOutPrepareHeader(st->waveout, wh, sizeof(*wh));
+	if (st->waveout) {
+		waveOutPrepareHeader(st->waveout, wh, sizeof(*wh));
+	}
 
 	INC_WPOS(st->pos);
 
-	res = waveOutWrite(st->waveout, wh, sizeof(*wh));
-	if (res != MMSYSERR_NOERROR)
-		DEBUG_WARNING("dsp_write: waveOutWrite: failed: %08x\n", res);
-	else
-		st->inuse++;
+	if (st->waveout) {
+		res = waveOutWrite(st->waveout, wh, sizeof(*wh));
+		if (res != MMSYSERR_NOERROR)
+			DEBUG_WARNING("dsp_write: waveOutWrite: failed: %08x\n", res);
+		else
+			st->inuse++;
+	}
 
 	return 0;
 }
@@ -194,7 +202,8 @@ static int write_stream_open(unsigned int dev, struct auplay_st *st,
 			  CALLBACK_FUNCTION | WAVE_FORMAT_DIRECT);
 	if (res != MMSYSERR_NOERROR) {
 		DEBUG_WARNING("waveOutOpen: failed %d\n", res);
-		return EINVAL;
+//		return EINVAL;
+		st->waveout = NULL;
 	}
 
 	return 0;

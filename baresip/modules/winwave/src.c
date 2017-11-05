@@ -54,14 +54,15 @@ static void ausrc_destructor(void *arg)
 
 	st->rh = NULL;
 
-	waveInStop(st->wavein);
-	// WIM_DATA may be sent
-	waveInReset(st->wavein);
+	if (st->wavein) {
+		waveInStop(st->wavein);
+		// WIM_DATA may be sent
+		waveInReset(st->wavein);
 
-	for (i = 0; i < READ_BUFFERS; i++) {
-		waveInUnprepareHeader(st->wavein, &st->bufs[i].wh,
-					  sizeof(WAVEHDR));
-		mem_deref(st->bufs[i].mb);
+		for (i = 0; i < READ_BUFFERS; i++) {
+			waveInUnprepareHeader(st->wavein, &st->bufs[i].wh, sizeof(WAVEHDR));
+			mem_deref(st->bufs[i].mb);
+		}
 	}
 
 	waveInClose(st->wavein);
@@ -82,12 +83,13 @@ static int add_wave_in(struct ausrc_st *st)
 	wh->dwFlags         = 0;
 	wh->dwUser          = (DWORD_PTR)db->mb;
 
-	waveInPrepareHeader(st->wavein, wh, sizeof(*wh));
-	res = waveInAddBuffer(st->wavein, wh, sizeof(*wh));
-	if (res != MMSYSERR_NOERROR) {
-		DEBUG_WARNING("add_wave_in: waveInAddBuffer fail: %08x\n",
-			      res);
-		return ENOMEM;
+	if (st->wavein) {
+		waveInPrepareHeader(st->wavein, wh, sizeof(*wh));
+		res = waveInAddBuffer(st->wavein, wh, sizeof(*wh));
+		if (res != MMSYSERR_NOERROR) {
+			DEBUG_WARNING("add_wave_in: waveInAddBuffer fail: %08x\n", res);
+			return ENOMEM;
+		}
 	}
 
 	INC_RPOS(st->pos);
@@ -110,8 +112,7 @@ static void CALLBACK waveInCallback(HWAVEOUT hwo,
 	(void)hwo;
 	(void)dwParam2;
 
-	if (!st->rh)
-		return;
+	if (!st->rh) return;
 
 	switch (uMsg) {
 
@@ -126,7 +127,15 @@ static void CALLBACK waveInCallback(HWAVEOUT hwo,
 	case WIM_DATA:
 		st->processing = true;
 		if (st->rdy) {
-			waveInUnprepareHeader(st->wavein, wh, sizeof(*wh));
+			if (st->wavein) {
+				waveInUnprepareHeader(st->wavein, wh, sizeof(*wh));
+			} else {
+				int16_t *p = (int16_t *)wh->lpData;
+				int n = wh->dwBytesRecorded / 2;
+				for (int i = 0; i < n; i++) {
+					p[i] = 0x8000;
+				}
+			}
 
 			if (st->user_filter) {
 				int16_t *p = (int16_t *)wh->lpData;
@@ -152,10 +161,8 @@ static unsigned int find_dev(const char* name) {
 	WAVEINCAPS wic;
 	unsigned int i;
 	int nInDevices = waveInGetNumDevs();
-	for (i=0; i<nInDevices; i++)
-	{
-		if (waveInGetDevCaps(i, &wic, sizeof(WAVEINCAPS))==MMSYSERR_NOERROR)
-		{
+	for (i=0; i<nInDevices; i++) {
+		if (waveInGetDevCaps(i, &wic, sizeof(WAVEINCAPS))==MMSYSERR_NOERROR) {
 			if (!strcmp(name, wic.szPname)) {
 				return i;
 			}
@@ -197,14 +204,17 @@ static int read_stream_open(unsigned int dev, struct ausrc_st *st, const struct 
 			  CALLBACK_FUNCTION | WAVE_FORMAT_DIRECT);
 	if (res != MMSYSERR_NOERROR) {
 		DEBUG_WARNING("waveInOpen: failed %d\n", err);
-		return EINVAL;
+//		return EINVAL;
+		st->wavein = NULL;
 	}
 
 	/* Prepare enough IN buffers to suite at least 50ms of data */
 	for (i = 0; i < READ_BUFFERS; i++)
 		err |= add_wave_in(st);
 
-	waveInStart(st->wavein);
+	if (st->wavein) {
+		waveInStart(st->wavein);
+	}
 
 	return err;
 }
