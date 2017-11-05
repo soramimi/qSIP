@@ -40,8 +40,8 @@ static int ww_init(void)
 
 static int ww_close(void)
 {
-	ausrc = mem_deref(ausrc);
-	auplay = mem_deref(auplay);
+	ausrc = (struct ausrc *)mem_deref(ausrc);
+	auplay = (struct auplay *)mem_deref(auplay);
 
 	return 0;
 }

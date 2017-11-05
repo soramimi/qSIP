@@ -40,7 +40,7 @@ struct ausrc_st {
 
 static void ausrc_destructor(void *arg)
 {
-	struct ausrc_st *st = arg;
+	struct ausrc_st *st = (struct ausrc_st *)arg;
 	int i;
 
 	/* Mark the device for closing
@@ -234,11 +234,11 @@ int qtaudio_src_alloc(struct ausrc_st **stp, struct ausrc *as,
 	if (!stp || !as || !prm)
 		return EINVAL;
 
-	st = mem_zalloc(sizeof(*st), ausrc_destructor);
+	st = (struct ausrc_st *)mem_zalloc(sizeof(*st), ausrc_destructor);
 	if (!st)
 		return ENOMEM;
 
-	st->as  = mem_ref(as);
+	st->as  = (struct ausrc *)mem_ref(as);
 	st->rh  = rh;
 	st->arg = arg;
 	st->user_filter = user_data ? user_data->filter : NULL;

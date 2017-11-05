@@ -40,7 +40,7 @@ struct auplay_st {
 
 static void auplay_destructor(void *arg)
 {
-	struct auplay_st *st = arg;
+	struct auplay_st *st = (struct auplay_st *)arg;
 	int i;
 
 	st->wh = NULL;
@@ -221,11 +221,11 @@ int qtaudio_play_alloc(struct auplay_st **stp, struct auplay *ap,
 	if (!stp || !ap || !prm)
 		return EINVAL;
 
-	st = mem_zalloc(sizeof(*st), auplay_destructor);
+	st = (struct auplay_st *)mem_zalloc(sizeof(*st), auplay_destructor);
 	if (!st)
 		return ENOMEM;
 
-	st->ap  = mem_ref(ap);
+	st->ap  = (struct auplay *)mem_ref(ap);
 	st->wh  = wh;
 	st->arg = arg;
 

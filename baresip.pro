@@ -83,7 +83,7 @@ SOURCES += \
 	baresip/src/paging_tx.c \
 	baresip/modules/l16/l16.c \
 	baresip/modules/softvol/softvol.c \
-    baresip/modules/qtaudio/qtaudio.c \
-    baresip/modules/qtaudio/qtaudio_in.c \
-    baresip/modules/qtaudio/qtaudio_out.c
+    baresip/modules/qtaudio/qtaudio_in.cpp \
+    baresip/modules/qtaudio/qtaudio_out.cpp \
+    baresip/modules/qtaudio/qtaudio.c
 

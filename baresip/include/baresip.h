@@ -319,7 +319,7 @@ typedef void (ausrc_error_h)(int err, const char *str, void *arg);
 typedef int  (ausrc_alloc_h)(struct ausrc_st **stp, struct ausrc *ausrc,
 			     struct media_ctx **ctx,
 			     struct ausrc_prm *prm, const char *device,
-				 ausrc_read_h *rh, ausrc_error_h *errh, void *arg, void *user_data);
+				 ausrc_read_h *rh, ausrc_error_h *errh, void *arg, struct user_extra_data_t *user_data);
 
 int ausrc_register(struct ausrc **asp, const char *name,
 		   ausrc_alloc_h *alloch);

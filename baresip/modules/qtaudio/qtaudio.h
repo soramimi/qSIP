@@ -10,6 +10,9 @@ struct dspbuf {
 	struct mbuf *mb;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int qtaudio_src_alloc(struct ausrc_st **stp, struct ausrc *as,
 		      struct media_ctx **ctx,
@@ -18,3 +21,7 @@ int qtaudio_src_alloc(struct ausrc_st **stp, struct ausrc *as,
 int qtaudio_play_alloc(struct auplay_st **stp, struct auplay *ap,
 		       struct auplay_prm *prm, const char *device,
 			   auplay_write_h *wh, void *arg, void *user_data);
+
+#ifdef __cplusplus
+}
+#endif
