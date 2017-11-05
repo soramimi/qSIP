@@ -147,6 +147,9 @@ int configure(void)
 	pl_set_str(&modname, "winwave");
 	load_module2(NULL, &modname);
 
+	pl_set_str(&modname, "qtaudio");
+	load_module2(NULL, &modname);
+
 	pl_set_str(&modname, "aufile");
 	load_module2(NULL, &modname);
 

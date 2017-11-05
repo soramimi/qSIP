@@ -897,7 +897,7 @@ const char *sdp_rattr(const struct sdp_session *s, const struct sdp_media *m,
  */
 
 #ifdef STATIC
-#define DECL_EXPORTS(name) exports_ ##name
+#define DECL_EXPORTS(name) exports_##name
 #else
 #define DECL_EXPORTS(name) exports
 #endif

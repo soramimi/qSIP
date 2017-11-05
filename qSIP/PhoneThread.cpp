@@ -272,6 +272,11 @@ void PhoneThread::run()
 
 	configure();
 
+	struct config *cfg = conf_config();
+	strcpy(cfg->audio.src_mod, "qtaudio");
+	strcpy(cfg->audio.play_mod, "qtaudio");
+	strcpy(cfg->audio.alert_mod, "qtaudio");
+
 	uag_event_register(event_handler, this);
 
 	if (m->account.server.isEmpty()) {

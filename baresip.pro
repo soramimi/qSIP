@@ -27,7 +27,8 @@ HEADERS += \
 	baresip/modules/presence/presence.h \
 	baresip/modules/dialog_info/dialog_info.h \
 	baresip/modules/recorder/wavfile.h \
-	include/module.h
+	include/module.h \
+    baresip/modules/qtaudio/qtaudio.h
 
 SOURCES += \
 	baresip/src/ua.c \
@@ -81,5 +82,8 @@ SOURCES += \
 	baresip/modules/aufile/aufile.c \
 	baresip/src/paging_tx.c \
 	baresip/modules/l16/l16.c \
-	baresip/modules/softvol/softvol.c
+	baresip/modules/softvol/softvol.c \
+    baresip/modules/qtaudio/qtaudio.c \
+    baresip/modules/qtaudio/qtaudio_in.c \
+    baresip/modules/qtaudio/qtaudio_out.c
 
