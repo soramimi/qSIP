@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include <re.h>
+#include <baresip.h>
 
 #ifndef Q_OS_WIN
 #include <sys/types.h>
@@ -11,7 +12,9 @@
 #endif
 
 struct PhoneThread::Private {
-    pthread_t thread_id = 0;
+#ifndef Q_OS_WIN
+	pthread_t thread_id = 0;
+#endif
 	std::string user_agent;
 	PhoneState state = PhoneState::None;
 	Direction direction = Direction::None;
@@ -272,7 +275,9 @@ bool PhoneThread::call(const QString &text)
 
 void PhoneThread::run()
 {
+#ifndef Q_OS_WIN
     m->thread_id = pthread_self();
+#endif
 
 	libre_init();
 	mod_init();
@@ -326,10 +331,14 @@ void PhoneThread::close()
 	hangup();
     requestInterruption();
     re_cancel();
-    while (isRunning()) {
+#ifndef Q_OS_WIN
+	while (isRunning()) {
         pthread_kill(m->thread_id, SIGINT);
         msleep(1);
     }
+#else
+	wait();
+#endif
 	m->ua = nullptr;
 	m->call = nullptr;
 }

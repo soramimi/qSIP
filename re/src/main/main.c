@@ -794,7 +794,6 @@ int re_main(re_signal_h *signalh, control_poll_callback_h *controlh, void *user_
 		(void)signal(SIGINT, signal_handler);
 		(void)signal(SIGALRM, signal_handler);
 		(void)signal(SIGTERM, signal_handler);
-        (void)signal(SIGUSR2, signal_handler);
     }
 #endif
 

@@ -4,10 +4,13 @@
 #include <QThread>
 #include "Account.h"
 #include "memory"
+
+#ifndef Q_OS_WIN
 #include <re_list.h>
 #include <re_fmt.h>
 #include <re_sdp.h>
 #include <baresip.h>
+#endif
 
 #ifdef bool
 #undef bool
