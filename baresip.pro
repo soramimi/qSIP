@@ -1,5 +1,5 @@
-
-QT       += core multimedia
+QT += core multimedia
+QT -= gui
 
 win32:Release:TARGET = baresip
 win32:Debug:TARGET = baresipd

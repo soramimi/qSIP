@@ -20,6 +20,7 @@
 #undef max
 #endif
 
+#include <QCoreApplication>
 #include <QAudioOutput>
 #include <QThread>
 #include <memory>
@@ -41,7 +42,17 @@ private:
 protected:
 	void run()
 	{
-		std::vector<char> buf(frame_size * 2);
+        QAudioFormat format;
+        format.setByteOrder(QAudioFormat::LittleEndian);
+        format.setChannelCount(1);
+        format.setCodec("audio/pcm");
+        format.setSampleRate(8000);
+        format.setSampleSize(16);
+        format.setSampleType(QAudioFormat::SignedInt);
+        output = std::shared_ptr<QAudioOutput>(new QAudioOutput(format));
+        device = output->start();
+
+        std::vector<char> buf(frame_size * 2);
 		while (1) {
 			if (isInterruptionRequested()) break;
 			int n = output->bytesFree();
@@ -50,6 +61,7 @@ protected:
 			} else if (source((uint8_t *)&buf[0], buf.size(), arg)) {
 				device->write(&buf[0], buf.size());
 			}
+            QCoreApplication::processEvents();
 		}
 	}
 public:
@@ -64,15 +76,6 @@ public:
 		this->source = src;
 		this->arg = arg;
 		this->frame_size = frame_size;
-		QAudioFormat format;
-		format.setByteOrder(QAudioFormat::LittleEndian);
-		format.setChannelCount(1);
-		format.setCodec("audio/pcm");
-		format.setSampleRate(8000);
-		format.setSampleSize(16);
-		format.setSampleType(QAudioFormat::SignedInt);
-		output = std::shared_ptr<QAudioOutput>(new QAudioOutput(format));
-		device = output->start();
 		start();
 	}
 };
