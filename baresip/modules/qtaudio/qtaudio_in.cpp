@@ -44,14 +44,15 @@ private:
 protected:
 	void run()
 	{
+		QAudioDeviceInfo defdev = QAudioDeviceInfo::defaultInputDevice();
         QAudioFormat format;
-        format.setByteOrder(QAudioFormat::LittleEndian);
-        format.setChannelCount(1);
-        format.setCodec("audio/pcm");
-        format.setSampleRate(8000);
-        format.setSampleSize(16);
+		format.setChannelCount(1);
+		format.setSampleRate(8000);
+		format.setSampleSize(16);
+		format.setCodec("audio/pcm");
         format.setSampleType(QAudioFormat::SignedInt);
-        input = std::shared_ptr<QAudioInput>(new QAudioInput(format));
+		format.setByteOrder(QAudioFormat::LittleEndian);
+		input = std::shared_ptr<QAudioInput>(new QAudioInput(defdev, format));
         device = input->start();
 
         std::vector<char> buf(frame_size * 2);
