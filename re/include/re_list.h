@@ -4,6 +4,8 @@
  * Copyright (C) 2010 Creytiv.com
  */
 
+#ifndef RE_LIST_H__
+#define RE_LIST_H__
 
 /** Linked-list element */
 struct le {
@@ -91,3 +93,5 @@ bool list_isempty(const struct list *list);
 
 #define LIST_FOREACH(list, le)					\
 	for ((le) = list_head((list)); (le); (le) = (le)->next)
+
+#endif

@@ -12,6 +12,14 @@
 #include <baresip.h>
 #include "qtaudio.h"
 
+#ifdef min
+#undef min
+#endif
+
+#ifdef max
+#undef max
+#endif
+
 #include <QAudioInput>
 #include <QDebug>
 #include <QThread>

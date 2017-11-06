@@ -4,12 +4,6 @@
  * Copyright (C) 2017 S.fuchita
  */
 
-
-struct dspbuf {
-	WAVEHDR      wh;
-	struct mbuf *mb;
-};
-
 #ifdef __cplusplus
 extern "C" {
 #endif

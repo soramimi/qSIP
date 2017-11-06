@@ -140,7 +140,7 @@ void ua_event(struct ua *ua, enum ua_event ev, struct call *call,
  *
  * @return 0 if success, otherwise errorcode
  */
-static int ua_register(struct ua *ua)
+int ua_register(struct ua *ua)
 {
 	struct account *acc;
 	struct le *le;

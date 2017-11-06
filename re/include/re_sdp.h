@@ -4,6 +4,8 @@
  * Copyright (C) 2010 Creytiv.com
  */
 
+#ifndef RE_SDP_H__
+#define RE_SDP_H__
 
 enum {
 	SDP_VERSION = 0
@@ -166,3 +168,5 @@ extern const char sdp_media_text[];
 
 extern const char sdp_proto_rtpavp[];
 extern const char sdp_proto_rtpsavp[];
+
+#endif

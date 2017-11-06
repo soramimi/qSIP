@@ -144,8 +144,10 @@ int configure(void)
 	pl_set_str(&modname, "portaudio");
 	load_module2(NULL, &modname);
 
+#ifdef _WIN32
 	pl_set_str(&modname, "winwave");
 	load_module2(NULL, &modname);
+#endif
 
 	pl_set_str(&modname, "qtaudio");
 	load_module2(NULL, &modname);

@@ -5,8 +5,6 @@
  */
 #include <re.h>
 #include <rem.h>
-#include <windows.h>
-#include <mmsystem.h>
 #include <baresip.h>
 #include "qtaudio.h"
 
@@ -22,14 +20,7 @@ static struct auplay *auplay;
 
 static int qtaudio_init(void)
 {
-	int play_dev_count, src_dev_count;
 	int err;
-
-	play_dev_count = waveOutGetNumDevs();
-	src_dev_count = waveInGetNumDevs();
-
-	re_printf("qtaudio: output devices: %d, input devices: %d\n",
-		  play_dev_count, src_dev_count);
 
 	err  = ausrc_register(&ausrc, "qtaudio", qtaudio_src_alloc);
 	err |= auplay_register(&auplay, "qtaudio", qtaudio_play_alloc);

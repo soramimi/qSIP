@@ -3,10 +3,15 @@
 #include <QDebug>
 
 #include <re.h>
-#include "baresip.h"
 
+#ifndef Q_OS_WIN
+#include <sys/types.h>
+#include <signal.h>
+#include <pthread.h>
+#endif
 
 struct PhoneThread::Private {
+    pthread_t thread_id = 0;
 	std::string user_agent;
 	PhoneState state = PhoneState::None;
 	Direction direction = Direction::None;
@@ -267,6 +272,8 @@ bool PhoneThread::call(const QString &text)
 
 void PhoneThread::run()
 {
+    m->thread_id = pthread_self();
+
 	libre_init();
 	mod_init();
 
@@ -295,6 +302,10 @@ void PhoneThread::run()
 	setState(PhoneState::Idle);
 
 	while (1) {
+        if (isInterruptionRequested()) {
+            qDebug() << "interrupted";
+            break;
+        }
 		m->user_extra_data.filter = custom_filter_handler;
 		m->user_extra_data.cookie = this;
 		int r = re_main(signal_handler, control_handler, &m->user_extra_data);
@@ -313,10 +324,12 @@ void PhoneThread::run()
 void PhoneThread::close()
 {
 	hangup();
-	re_cancel();
-	if (!wait(3000)) {
-		terminate();
-	}
+    requestInterruption();
+    re_cancel();
+    while (isRunning()) {
+        pthread_kill(m->thread_id, SIGINT);
+        msleep(1);
+    }
 	m->ua = nullptr;
 	m->call = nullptr;
 }

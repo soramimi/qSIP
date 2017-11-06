@@ -1,5 +1,6 @@
-Release:TARGET = portaudio
-Debug:TARGET = portaudiod
+win32:Release:TARGET = portaudio
+win32:Debug:TARGET = portaudiod
+unix:TARGET = portaudio
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle
@@ -21,12 +22,21 @@ SOURCES += \
         portaudio/src/common/pa_front.c \
         portaudio/src/common/pa_process.c \
         portaudio/src/common/pa_ringbuffer.c \
-        portaudio/src/common/pa_stream.c \
-        portaudio/src/hostapi/dsound/pa_win_ds_dynlink.c \
-        portaudio/src/hostapi/dsound/pa_win_ds.c \
-        portaudio/src/os/win/pa_x86_plain_converters.c \
-        portaudio/src/os/win/pa_win_coinitialize.c \
+		portaudio/src/common/pa_stream.c
+
+unix:SOURCES += \
+    portaudio/src/os/unix/pa_unix_hostapis.c \
+    portaudio/src/os/unix/pa_unix_util.c
+
+win32:SOURCES += \
+		portaudio/src/hostapi/dsound/pa_win_ds_dynlink.c \
+		portaudio/src/hostapi/dsound/pa_win_ds.c \
+		portaudio/src/os/win/pa_x86_plain_converters.c \
+		portaudio/src/os/win/pa_win_coinitialize.c \
         portaudio/src/os/win/pa_win_hostapis.c \
         portaudio/src/os/win/pa_win_util.c \
         portaudio/src/os/win/pa_win_waveformat.c \
         portaudio/src/os/win/pa_win_wdmks_utils.c
+
+unix:HEADERS += \
+    portaudio/src/os/unix/pa_unix_util.h

@@ -1,5 +1,6 @@
-Release:TARGET = rem
-Debug:TARGET = remd
+win32:Release:TARGET = rem
+win32:Debug:TARGET = remd
+unix:TARGET = rem
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

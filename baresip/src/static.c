@@ -2,8 +2,11 @@
 #include <re_types.h>
 #include <re_mod.h>
 
-extern const struct mod_export exports_g711;
+#ifdef _WIN32
 extern const struct mod_export exports_winwave;
+#endif
+
+extern const struct mod_export exports_g711;
 extern const struct mod_export exports_portaudio;
 extern const struct mod_export exports_stun;
 extern const struct mod_export exports_speex;
@@ -24,7 +27,11 @@ extern const struct mod_export exports_qtaudio;
 
 const struct mod_export *mod_table[] = {
 	&exports_g711,
+#ifdef _WIN32
 	&exports_winwave,
+    &exports_recorder,
+    &exports_aufile,
+#endif
 	&exports_portaudio,
 	&exports_stun,
 	&exports_speex,
@@ -37,8 +44,6 @@ const struct mod_export *mod_table[] = {
 	&exports_l16,
 	&exports_presence,
 	&exports_dialog_info,
-	&exports_recorder,
-	&exports_aufile,
 	&exports_softvol,
 	&exports_qtaudio,
 	NULL

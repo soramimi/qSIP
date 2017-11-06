@@ -101,6 +101,8 @@ void          call_enable_rtp_timeout(struct call *call, uint32_t timeout_ms);
 /*
  * Paging TX
  */
+struct paging_tx;
+struct config;
 enum paging_tx_event {
 	PAGING_TX_STOPPED = 0
 };

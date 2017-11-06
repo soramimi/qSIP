@@ -25,7 +25,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 	auto AddPage = [&](QString const &name, QWidget *page){
 		item = new QTreeWidgetItem();
 		item->setText(0, name);
-		item->setData(0, Qt::UserRole, QVariant((uintptr_t)(QWidget *)page));
+        item->setData(0, Qt::UserRole, QVariant((qulonglong)(uintptr_t)(QWidget *)page));
 		ui->treeWidget->addTopLevelItem(item);
 	};
 	AddPage(tr("Account"), ui->page_account);

@@ -15,9 +15,17 @@ INCLUDEPATH += $$PWD/baresip/include
 INCLUDEPATH += $$PWD/re/include
 INCLUDEPATH += $$PWD/qSIP
 
-LIBS += -L$$PWD/_build -lws2_32 -liphlpapi -lwinmm
-Release:LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722
-Debug:LIBS += -lbaresipd -lred -lremd -lportaudiod -lspeexd -lwebrtcd -lgsmd -lg722d
+win32 {
+	LIBS += -L$$PWD/_build -lws2_32 -liphlpapi -lwinmm
+	Release:LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722
+	Debug:LIBS += -lbaresipd -lred -lremd -lportaudiod -lspeexd -lwebrtcd -lgsmd -lg722d
+}
+
+unix {
+	LIBS += -L$$PWD/_build
+	LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722 -ldl -lpthread
+#	LIBS += -lbaresipd -lred -lremd -lportaudiod -lspeexd -lwebrtcd -lgsmd -lg722d -ldl
+}
 
 SOURCES += \
 	qSIP/main.cpp \

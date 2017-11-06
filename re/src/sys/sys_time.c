@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <re_sys.h>
 #include <time.h>
-#include <sys\timeb.h>
+#include <sys/timeb.h>
 #include <stdio.h>
 
 char* sys_time(char* buf, int size) {
@@ -11,7 +11,11 @@ char* sys_time(char* buf, int size) {
 	int len;
 	ftime( &timebuffer );
 	len = strftime(buf, size, "%T", localtime(&timebuffer.time));
-	_snprintf(buf + len, size-len, ".%03hu", timebuffer.millitm);
+#ifdef _WIN32
+    _snprintf(buf + len, size-len, ".%03hu", timebuffer.millitm);
+#else
+    snprintf(buf + len, size-len, ".%03hu", timebuffer.millitm);
+#endif
 	buf[size-1] = '\0';
 	return buf;
 }

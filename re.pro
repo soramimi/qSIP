@@ -1,5 +1,6 @@
-Release:TARGET = re
-Debug:TARGET = red
+win32:Release:TARGET = re
+win32:Debug:TARGET = red
+unix:TARGET = re
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle
@@ -7,7 +8,8 @@ CONFIG -= qt
 
 INCLUDEPATH += $$PWD/re/include
 
-QMAKE_CFLAGS += -DHAVE_SELECT
+QMAKE_CFLAGS += -DHAVE_SELECT- -DHAVE_SIGNAL
+unix:QMAKE_CFLAGS += -DHAVE_GETIFADDRS
 
 DESTDIR = $$PWD/_build
 
@@ -21,7 +23,6 @@ SOURCES += \
         re/src/dns/client.c \
         re/src/dns/cstr.c \
         re/src/dns/dname.c \
-        re/src/dns/win32/srv.c \
         re/src/dns/rrlist.c \
         re/src/dns/ns.c \
         re/src/dns/rr.c \
@@ -53,7 +54,6 @@ SOURCES += \
         re/src/ice/stunsrv.c \
         re/src/jbuf/jbuf.c \
         re/src/list/list.c \
-        re/src/lock/win32/win32_lock.c \
         re/src/main/method.c \
         re/src/main/init.c \
         re/src/main/main.c \
@@ -61,8 +61,6 @@ SOURCES += \
         re/src/md5/wrap.c \
         re/src/md5/md5.c \
         re/src/mem/mem.c \
-        re/src/mod/win32/dll.c \
-        re/src/mqueue/win32/pipe.c \
         re/src/natbd/natstr.c \
         re/src/natbd/filtering.c \
         re/src/natbd/genalg.c \
@@ -74,7 +72,6 @@ SOURCES += \
         re/src/net/net.c \
         re/src/net/netstr.c \
         re/src/net/rt.c \
-        re/src/net/win32/wif.c \
         re/src/rtp/source.c \
         re/src/rtp/fb.c \
         re/src/rtp/member.c \
@@ -161,6 +158,22 @@ SOURCES += \
         re/src/sip/sip_alert_info.c \
         re/src/sys/sys_time.c \
         re/src/sip/sip_access_url.c
+
+win32:SOURCES += \
+		re/src/dns/win32/srv.c \
+		re/src/mqueue/win32/pipe.c \
+		re/src/net/win32/wif.c \
+		re/src/mod/win32/dll.c \
+		re/src/lock/win32/win32_lock.c
+
+unix:SOURCES += \
+		re/src/lock/lock.c \
+		re/src/lock/rwlock.c \
+		re/src/net/ifaddrs.c \
+		re/src/net/posix/pif.c \
+		re/src/mod/dl.c
+
+
 
 HEADERS += \
         re/include/re_uri.h \

@@ -1,5 +1,6 @@
-Release:TARGET = g722
-Debug:TARGET = g722d
+win32:Release:TARGET = g722
+win32:Debug:TARGET = g722d
+unix:TARGET = g722
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

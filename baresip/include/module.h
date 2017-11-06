@@ -5,7 +5,9 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #ifdef _MSC_VER
 #	define CALL_CONV
@@ -16,10 +18,15 @@ extern "C" {
 /** \def DECLARE_FN
     \brief Declare function or consistent function + function pointer set depending on _EXPORTING
 */
+#ifdef _WIN32
 #ifdef _EXPORTING
 #define DECLARE_FN(type, fn, ...) __declspec(dllexport) type CALL_CONV fn(__VA_ARGS__)
 #else
 #define DECLARE_FN(type, fn, ...) __declspec(dllimport) type CALL_CONV fn(__VA_ARGS__); \
+	typedef type (CALL_CONV *pf_##fn)(__VA_ARGS__)
+#endif
+#else
+#define DECLARE_FN(type, fn, ...) type CALL_CONV fn(__VA_ARGS__); \
 	typedef type (CALL_CONV *pf_##fn)(__VA_ARGS__)
 #endif
 
