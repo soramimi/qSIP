@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #endif
 #include <sys/types.h>
+#include <sys/time.h>
 #undef _STRICT_ANSI
 #include <string.h>
 #ifdef HAVE_UNISTD_H

@@ -12,6 +12,7 @@
 #include <windows.h>
 #else
 #include <time.h>
+#include <sys/time.h>
 #endif
 #ifdef HAVE_PTHREAD
 #include <stdlib.h>

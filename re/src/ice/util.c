@@ -11,6 +11,7 @@
 #ifndef WIN32
 #include <time.h>
 #endif
+#include <sys/time.h>
 #include "ice.h"
 
 
@@ -131,7 +132,6 @@ uint32_t ice_list_unique(struct list *list, list_unique_h *uh)
 
 	return n;
 }
-
 
 /** Get time of day in [microseconds] */
 uint64_t ice_get_usec(void)
