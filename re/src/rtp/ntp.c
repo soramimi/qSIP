@@ -14,7 +14,9 @@
 #include <re_sa.h>
 #include <re_rtp.h>
 #include "rtcp.h"
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 
 
 /*

@@ -6,7 +6,9 @@
 #include <re_types.h>
 #include <re_fmt.h>
 #include <re_sys.h>
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 
 #ifdef WIN32
 #include <windows.h>

@@ -8,7 +8,9 @@
 #include <sys/time.h>
 #endif
 #include <sys/types.h>
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 #undef _STRICT_ANSI
 #include <string.h>
 #ifdef HAVE_UNISTD_H

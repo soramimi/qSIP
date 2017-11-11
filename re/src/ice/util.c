@@ -10,8 +10,8 @@
 #endif
 #ifndef WIN32
 #include <time.h>
-#endif
 #include <sys/time.h>
+#endif
 #include "ice.h"
 
 
