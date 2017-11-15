@@ -105,7 +105,7 @@ void PhoneWidget::setRegistrationStatusText(QString const &text)
 
 void PhoneWidget::setStatusText(QString const &text)
 {
-	ui->label_message->setText(text);
+	ui->label_message->setText(text.isEmpty() ? "-" : text);
 }
 
 bool PhoneWidget::isRegistered() const
