@@ -36,6 +36,7 @@ public:
 	void setOutgoingEstablishedHandler(handler_fn_t handler);
 	void setClosedHandler(handler_fn_t handler);
 	QString dtmftext() const;
+	void setVisibleHoldCheckBox(bool f);
 private slots:
 	void on_toolButton_clear_clicked();
 	void on_toolButton_pad_0_clicked();

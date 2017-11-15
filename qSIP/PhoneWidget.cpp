@@ -391,3 +391,9 @@ void PhoneWidget::setVoice(VoicePtr voice)
 {
 	m->phone->setVoice(voice);
 }
+
+void PhoneWidget::setVisibleHoldCheckBox(bool f)
+{
+	ui->checkBox_hold->setVisible(f);
+}
+

@@ -67,9 +67,8 @@ protected:
 				len = device->read(p, len);
 
 				if (user_filter) {
-					int16_t *p = (int16_t *)p;
 					int n = len / 2;
-					user_filter(user_cookie, p, n);
+					user_filter(user_cookie, (int16_t *)p, n);
 				}
 
 				sink((uint8_t *)p, len, arg);
