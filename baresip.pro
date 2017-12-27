@@ -1,9 +1,8 @@
 QT += core multimedia
 QT -= gui
 
-win32:Release:TARGET = baresip
-win32:Debug:TARGET = baresipd
-unix:TARGET = baresip
+CONFIG(release, debug|release):TARGET = baresip
+CONFIG(debug, debug|release):TARGET = baresipd
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

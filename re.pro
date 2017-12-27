@@ -1,6 +1,5 @@
-win32:Release:TARGET = re
-win32:Debug:TARGET = red
-unix:TARGET = re
+CONFIG(release, debug|release):TARGET = re
+CONFIG(debug, debug|release):TARGET = red
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

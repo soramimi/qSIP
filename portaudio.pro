@@ -1,6 +1,5 @@
-win32:Release:TARGET = portaudio
-win32:Debug:TARGET = portaudiod
-unix:TARGET = portaudio
+CONFIG(release, debug|release):TARGET = portaudio
+CONFIG(debug, debug|release):TARGET = portaudiod
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

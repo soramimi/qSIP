@@ -1,6 +1,5 @@
-win32:Release:TARGET = speex
-win32:Debug:TARGET = speexd
-unix:TARGET = speex
+CONFIG(release, debug|release):TARGET = speex
+CONFIG(debug, debug|release):TARGET = speexd
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

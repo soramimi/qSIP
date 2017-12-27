@@ -1,6 +1,5 @@
-win32:Release:TARGET = gsm
-win32:Debug:TARGET = gsmd
-unix:TARGET = gsm
+CONFIG(release, debug|release):TARGET = gsm
+CONFIG(debug, debug|release):TARGET = gsmd
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

@@ -1,6 +1,5 @@
-win32:Release:TARGET = webrtc
-win32:Debug:TARGET = webrtcd
-unix:TARGET = webrtc
+CONFIG(release, debug|release):TARGET = webrtc
+CONFIG(debug, debug|release):TARGET = webrtcd
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle

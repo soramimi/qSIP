@@ -17,14 +17,14 @@ INCLUDEPATH += $$PWD/qSIP
 
 win32 {
 	LIBS += -L$$PWD/_build -lws2_32 -liphlpapi -lwinmm
-	Release:LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722
-	Debug:LIBS += -lbaresipd -lred -lremd -lportaudiod -lspeexd -lwebrtcd -lgsmd -lg722d
+	CONFIG(release, debug|release):LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722
+	CONFIG(debug,   debug|release):LIBS += -lbaresipd -lred -lremd -lportaudiod -lspeexd -lwebrtcd -lgsmd -lg722d
 }
 
 unix {
 	LIBS += -L$$PWD/_build
-	LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722 -ldl -lpthread
-#	LIBS += -lbaresipd -lred -lremd -lportaudiod -lspeexd -lwebrtcd -lgsmd -lg722d -ldl
+	CONFIG(release, debug|release):LIBS += -lbaresip -lre -lrem -lportaudio -lspeex -lwebrtc -lgsm -lg722 -ldl -lpthread
+	CONFIG(debug,   debug|release):LIBS += -lbaresipd -lred -lremd -lportaudiod -lspeexd -lwebrtcd -lgsmd -lg722d -ldl -lpthread
 }
 
 SOURCES += \
