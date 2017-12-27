@@ -58,9 +58,14 @@ void MainWindow::close()
 	ui->widget_phone->close();
 }
 
+void MainWindow::reregister(SIP::Account const &a)
+{
+	ui->widget_phone->setup(a);
+}
+
 void MainWindow::reregister()
 {
-	ui->widget_phone->setup(m->appsettings.account);
+	reregister(m->appsettings.account);
 }
 
 void MainWindow::on_action_settings_triggered()

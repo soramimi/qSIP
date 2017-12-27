@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "Account.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,12 +20,13 @@ public:
 
 	QString statusText() const;
 	void setStatusText(const QString &text);
+	void reregister(const SIP::Account &a);
+	void reregister();
 private slots:
 	void on_action_settings_triggered();
 	void on_action_test_triggered();
 private:
 	Ui::MainWindow *ui;
-	void reregister();
 	void close();
 };
 

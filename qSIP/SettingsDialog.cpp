@@ -47,9 +47,14 @@ void SettingsDialog::loadSettings(ApplicationSettings *as)
 
 	s.beginGroup("Account");
 	as->account.server = s.value("Server").toString();
+	as->account.port = s.value("Port").toInt();
 	as->account.user = s.value("User").toString();
 	as->account.password = s.value("Password").toString();
 	s.endGroup();
+
+	if (as->account.port < 1 || as->account.port > 65535) {
+		as->account.port = 5060;
+	}
 }
 
 void SettingsDialog::saveSettings()
@@ -61,6 +66,7 @@ void SettingsDialog::saveSettings()
 
 	s.beginGroup("Account");
 	s.setValue("Server", set.account.server);
+	s.setValue("Port", set.account.port);
 	s.setValue("User", set.account.user);
 	s.setValue("Password", set.account.password);
 	s.endGroup();

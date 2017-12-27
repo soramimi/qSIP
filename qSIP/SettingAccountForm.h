@@ -20,8 +20,11 @@ public:
 private:
 	Ui::SettingAccountForm *ui;
 
+	SIP::Account account();
 protected:
 	void exchange(bool save);
+private slots:
+	void on_pushButton_reregister_clicked();
 };
 
 #endif // SETTINGACCOUNTFORM_H
