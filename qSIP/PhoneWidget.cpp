@@ -117,7 +117,7 @@ void PhoneWidget::updateRegistrationStatus()
 {
 	if (isRegistered()) {
 		QString s = "%1 Ready.";
-		s = s.arg(m->phone->account().user);
+		s = s.arg(m->phone->account().phone_number);
 		setRegistrationStatusText(s);
 	} else {
 		if (m->registration_seconds < 3) {

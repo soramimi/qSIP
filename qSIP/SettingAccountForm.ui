@@ -16,49 +16,69 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>SIP/registration server</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="1">
       <widget class="QLineEdit" name="lineEdit_sip_server"/>
      </item>
-     <item row="2" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_user">
        <property name="text">
         <string>User</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="4" column="1">
       <widget class="QLineEdit" name="lineEdit_user"/>
      </item>
-     <item row="3" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_password">
        <property name="text">
         <string>Password</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="5" column="1">
       <widget class="QLineEdit" name="lineEdit_password">
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Port</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QLineEdit" name="lineEdit_port"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Phone number</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEdit_phone_number"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Service domain</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="lineEdit_service_domain"/>
      </item>
     </layout>
    </item>
@@ -102,10 +122,13 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>lineEdit_phone_number</tabstop>
   <tabstop>lineEdit_sip_server</tabstop>
   <tabstop>lineEdit_port</tabstop>
+  <tabstop>lineEdit_service_domain</tabstop>
   <tabstop>lineEdit_user</tabstop>
   <tabstop>lineEdit_password</tabstop>
+  <tabstop>pushButton_reregister</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -46,8 +46,10 @@ void SettingsDialog::loadSettings(ApplicationSettings *as)
 //	s.endGroup();
 
 	s.beginGroup("Account");
+	as->account.phone_number = s.value("PhoneNumber").toString();
 	as->account.server = s.value("Server").toString();
 	as->account.port = s.value("Port").toInt();
+	as->account.service_domain = s.value("ServiceDomain").toString();
 	as->account.user = s.value("User").toString();
 	as->account.password = s.value("Password").toString();
 	s.endGroup();
@@ -65,8 +67,10 @@ void SettingsDialog::saveSettings()
 //	s.endGroup();
 
 	s.beginGroup("Account");
+	s.setValue("PhoneNumber", set.account.phone_number);
 	s.setValue("Server", set.account.server);
 	s.setValue("Port", set.account.port);
+	s.setValue("ServiceDomain", set.account.service_domain);
 	s.setValue("User", set.account.user);
 	s.setValue("Password", set.account.password);
 	s.endGroup();

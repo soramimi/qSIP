@@ -17,7 +17,7 @@
 #include <re_udp.h>
 #include <re_sip.h>
 #include "sip.h"
-
+#include <malloc.h>
 
 struct sip_auth {
 	struct list realml;
@@ -77,33 +77,35 @@ static void auth_destructor(void *arg)
 }
 
 
-static int mkdigest(uint8_t *digest, const struct realm *realm,
-		    const char *met, const char *uri, uint64_t cnonce)
+static int mkdigest(uint8_t *digest, const struct realm *realm, const char *met, const char *uri, uint64_t cnonce)
 {
 	uint8_t ha1[MD5_SIZE], ha2[MD5_SIZE];
 	int err;
 
-	err = md5_printf(ha1, "%s:%s:%s",
-			 realm->user, realm->realm, realm->pass);
-	if (err)
-		return err;
+	err = md5_printf(ha1, "%s:%s:%s", realm->user, realm->realm, realm->pass);
+	if (err) return err;
 
-	err = md5_printf(ha2, "%s:%s", met, uri);
-	if (err)
-		return err;
+	char *uri2 = alloca(strlen(uri) + 1);
+	strcpy(uri2, uri);
+	char *p = strchr(uri2, ';');
+	if (p) *p = 0;
 
-	if (realm->qop)
+	err = md5_printf(ha2, "%s:%s", met, uri2);
+	if (err) return err;
+
+	if (realm->qop) {
 		return md5_printf(digest, "%w:%s:%08x:%016llx:auth:%w",
 				  ha1, sizeof(ha1),
 				  realm->nonce,
 				  realm->nc,
 				  cnonce,
 				  ha2, sizeof(ha2));
-	else
+	} else {
 		return md5_printf(digest, "%w:%s:%w",
 				  ha1, sizeof(ha1),
 				  realm->nonce,
 				  ha2, sizeof(ha2));
+	}
 }
 
 
@@ -254,21 +256,26 @@ int sip_auth_encode(struct mbuf *mb, struct sip_auth *auth, const char *met,
 			continue;
 		}
 
+		char *uri2 = alloca(strlen(uri) + 1);
+		strcpy(uri2, uri);
+		char *p = strchr(uri2, ';');
+		if (p) *p = 0;
+
 		err |= mbuf_printf(mb, "Digest username=\"%s\"", realm->user);
-		err |= mbuf_printf(mb, ", realm=\"%s\"", realm->realm);
-		err |= mbuf_printf(mb, ", nonce=\"%s\"", realm->nonce);
-		err |= mbuf_printf(mb, ", uri=\"%s\"", uri);
-		err |= mbuf_printf(mb, ", response=\"%w\"",
-				   digest, sizeof(digest));
+		err |= mbuf_printf(mb, ",realm=\"%s\"", realm->realm);
+		err |= mbuf_printf(mb, ",nonce=\"%s\"", realm->nonce);
+//		err |= mbuf_printf(mb, ",algorithm=MD5");
+		err |= mbuf_printf(mb, ",uri=\"%s\"", uri2);
+		err |= mbuf_printf(mb, ",response=\"%w\"", digest, sizeof(digest));
 
 		if (realm->opaque)
-			err |= mbuf_printf(mb, ", opaque=\"%s\"",
+			err |= mbuf_printf(mb, ",opaque=\"%s\"",
 					   realm->opaque);
 
 		if (realm->qop) {
-			err |= mbuf_printf(mb, ", cnonce=\"%016llx\"", cnonce);
+			err |= mbuf_printf(mb, ",cnonce=\"%016llx\"", cnonce);
 			err |= mbuf_write_str(mb, ", qop=auth");
-			err |= mbuf_printf(mb, ", nc=%08x", realm->nc);
+			err |= mbuf_printf(mb, ",nc=%08x", realm->nc);
 		}
 
 		++realm->nc;

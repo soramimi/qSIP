@@ -16,6 +16,7 @@
 #include <re_sip.h>
 #include "sip.h"
 
+#include <malloc.h>
 
 struct sip_request {
 	struct le le;
@@ -177,8 +178,15 @@ static int request(struct sip_request *req, enum sip_transp tp,
 	err = sip_transp_laddr(req->sip, &laddr, tp, dst);
 	if (err)
 		goto out;
-
+#if 0
 	err  = mbuf_printf(mb, "%s %s SIP/2.0\r\n", req->met, req->uri);
+#else
+	char *uri = alloca(strlen(req->uri) + 1);
+	strcpy(uri, req->uri);
+	char *p = strchr(uri, ';');
+	if (p) *p = 0;
+	err  = mbuf_printf(mb, "%s %s SIP/2.0\r\n", req->met, uri);
+#endif
 	err |= mbuf_printf(mb, "Via: SIP/2.0/%s %J;branch=%s;rport\r\n",
 			   sip_transp_name(tp), &laddr, branch);
 	err |= req->sendh ? req->sendh(tp, &laddr, dst, mb, req->arg) : 0;

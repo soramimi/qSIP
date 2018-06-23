@@ -6,8 +6,10 @@
 namespace SIP {
 
 struct Account {
+	QString phone_number;
 	QString server;
 	int port = 5060;
+	QString service_domain;
 	QString user;
 	QString password;
 

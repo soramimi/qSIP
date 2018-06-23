@@ -233,7 +233,7 @@ void PhoneThread::event_handler(struct ua *ua, ua_event ev, struct call *call, c
 
 static QString makeServerAddress(SIP::Account const &a)
 {
-	QString addr = a.server;
+	QString addr = a.service_domain;
 	int i = addr.indexOf(':');
 	if (i >= 0) {
 		addr = addr.mid(0, i);
@@ -266,7 +266,7 @@ bool PhoneThread::call(const QString &text)
 
 	QString url = "sip:%1@%2";
 	url = url.arg(peer_number).arg(makeServerAddress(m->account));
-	int r = ua_connect((struct ua *)m->ua, &m->call, nullptr, url.toStdString().c_str(), nullptr, VIDMODE_OFF);
+	int r = ua_connect((struct ua *)m->ua, &m->call, nullptr, url.toLatin1(), nullptr, VIDMODE_OFF);
 	if (r == 0) {
 		m->peer_number = peer_number;
 	}
@@ -294,13 +294,15 @@ void PhoneThread::run()
 	if (m->account.server.isEmpty()) {
 		// nop
 	} else {
-		QString aor = "<sip:%1@%2;transport=udp>;audio_codecs=PCMU/8000/1,PCMA/8000/1";
+		QString aor = "<sip:%1@%2;transport=udp>;auth_user=%4;outbound1=%5;audio_codecs=PCMU/8000/1,PCMA/8000/1";
 		aor = aor
-				.arg(m->account.user)
+				.arg(m->account.phone_number)
 				.arg(makeServerAddress(m->account))
+				.arg(m->account.user)
+				.arg(QString("sip:%1:%2").arg(m->account.server).arg(m->account.port))
 				;
 		ua_init(uaName(), false, true, true, true, false);
-		ua_alloc((struct ua **)&m->ua, aor.toStdString().c_str(), m->account.password.toStdString().c_str(), m->account.user.toStdString().c_str());
+		ua_alloc((struct ua **)&m->ua, aor.toLatin1(), m->account.password.toLatin1(), m->account.phone_number.toLatin1());
 	}
 //	m->user_extra_data.audio_source_filter_fn = custom_filter_handler;
 //	m->user_extra_data.cookie = this;

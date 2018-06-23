@@ -22,13 +22,17 @@ void SettingAccountForm::exchange(bool save)
 		return port;
 	};
 	if (save) {
+		settings()->account.phone_number = ui->lineEdit_phone_number->text();
 		settings()->account.server = ui->lineEdit_sip_server->text();
 		settings()->account.port = FixPortNumber(ui->lineEdit_port->text().toInt());
+		settings()->account.service_domain = ui->lineEdit_service_domain->text();
 		settings()->account.user = ui->lineEdit_user->text();
 		settings()->account.password = ui->lineEdit_password->text();
 	} else {
+		ui->lineEdit_phone_number->setText(settings()->account.phone_number);
 		ui->lineEdit_sip_server->setText(settings()->account.server);
 		ui->lineEdit_port->setText(QString::number(FixPortNumber(settings()->account.port)));
+		ui->lineEdit_service_domain->setText(settings()->account.service_domain);
 		ui->lineEdit_user->setText(settings()->account.user);
 		ui->lineEdit_password->setText(settings()->account.password);
 	}
