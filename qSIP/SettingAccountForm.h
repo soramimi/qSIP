@@ -20,7 +20,7 @@ public:
 private:
 	Ui::SettingAccountForm *ui;
 
-	SIP::Account account();
+	void exchangeAccount(bool save, SIP::Account *a);
 protected:
 	void exchange(bool save);
 private slots:

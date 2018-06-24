@@ -13,7 +13,7 @@ SettingAccountForm::~SettingAccountForm()
 	delete ui;
 }
 
-void SettingAccountForm::exchange(bool save)
+void SettingAccountForm::exchangeAccount(bool save, SIP::Account *a)
 {
 	auto FixPortNumber = [&](int port){
 		if (port < 1 || port > 65535) {
@@ -22,33 +22,30 @@ void SettingAccountForm::exchange(bool save)
 		return port;
 	};
 	if (save) {
-		settings()->account.phone_number = ui->lineEdit_phone_number->text();
-		settings()->account.server = ui->lineEdit_sip_server->text();
-		settings()->account.port = FixPortNumber(ui->lineEdit_port->text().toInt());
-		settings()->account.service_domain = ui->lineEdit_service_domain->text();
-		settings()->account.user = ui->lineEdit_user->text();
-		settings()->account.password = ui->lineEdit_password->text();
+		a->phone_number = ui->lineEdit_phone_number->text();
+		a->server = ui->lineEdit_sip_server->text();
+		a->port = ui->lineEdit_port->text().toInt();
+		a->service_domain = ui->lineEdit_service_domain->text();
+		a->user = ui->lineEdit_user->text();
+		a->password = ui->lineEdit_password->text();
 	} else {
-		ui->lineEdit_phone_number->setText(settings()->account.phone_number);
-		ui->lineEdit_sip_server->setText(settings()->account.server);
-		ui->lineEdit_port->setText(QString::number(FixPortNumber(settings()->account.port)));
-		ui->lineEdit_service_domain->setText(settings()->account.service_domain);
-		ui->lineEdit_user->setText(settings()->account.user);
-		ui->lineEdit_password->setText(settings()->account.password);
+		ui->lineEdit_phone_number->setText(a->phone_number);
+		ui->lineEdit_sip_server->setText(a->server);
+		ui->lineEdit_port->setText(QString::number(FixPortNumber(a->port)));
+		ui->lineEdit_service_domain->setText(a->service_domain);
+		ui->lineEdit_user->setText(a->user);
+		ui->lineEdit_password->setText(a->password);
 	}
 }
 
-SIP::Account SettingAccountForm::account()
+void SettingAccountForm::exchange(bool save)
 {
-	SIP::Account a;
-	a.server = ui->lineEdit_sip_server->text();
-	a.port = ui->lineEdit_port->text().toInt();
-	a.user = ui->lineEdit_user->text();
-	a.password = ui->lineEdit_password->text();
-	return a;
+	exchangeAccount(save, &settings()->account);
 }
 
 void SettingAccountForm::on_pushButton_reregister_clicked()
 {
-	mainwindow()->reregister(account());
+	SIP::Account a;
+	exchangeAccount(true, &a);
+	mainwindow()->reregister(a);
 }
