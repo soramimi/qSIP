@@ -3,8 +3,13 @@ VoIP/SIP client (softphone) for Windows
 
 This program was created based on <a href="http://tomeko.net/software/SIPclient/">tSIP</a>.
 
-The original tSIP was created in Borland's development environment, but this program used Microsoft's compiler and Qt 5.
+The original tSIP was created with Borland's development environment, Instead, this program used Microsoft's compiler and Qt 5.
 
+## Build
+
+Launch Qt Creator.
+First, open *.pro files except qSIP.pro and build these.
+Second, open qSIP.pro and build it.
 
 ## License
 
