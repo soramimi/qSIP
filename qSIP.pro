@@ -39,7 +39,8 @@ SOURCES += \
     qSIP/misc.cpp \
     qSIP/StatusLabel.cpp \
 	qSIP/PhoneWidget.cpp \
-	qSIP/ClearButton.cpp
+	qSIP/ClearButton.cpp \
+    qSIP/Network.cpp
 
 HEADERS += \
 	qSIP/MainWindow.h \
@@ -54,7 +55,8 @@ HEADERS += \
     qSIP/Account.h \
     qSIP/StatusLabel.h \
 	qSIP/PhoneWidget.h \
-	qSIP/ClearButton.h
+	qSIP/ClearButton.h \
+    qSIP/Network.h
 
 FORMS += \
 	qSIP/MainWindow.ui \

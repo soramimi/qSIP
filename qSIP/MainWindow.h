@@ -14,6 +14,7 @@ class MainWindow : public QMainWindow
 private:
 	struct Private;
 	Private *m;
+	void test();
 public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
@@ -24,10 +25,13 @@ public:
 	void reregister();
 private slots:
 	void on_action_settings_triggered();
-	void on_action_test_triggered();
 private:
 	Ui::MainWindow *ui;
 	void close();
+
+	// QWidget interface
+protected:
+	void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // MAINWINDOW_H

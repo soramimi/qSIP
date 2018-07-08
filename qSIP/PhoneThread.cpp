@@ -1,3 +1,4 @@
+#include "Network.h"
 #include "PhoneThread.h"
 #include <string.h>
 #include <QDebug>
@@ -22,6 +23,7 @@ struct PhoneThread::Private {
 	struct call *call = nullptr;
 	user_extra_data_t user_extra_data;
 	SIP::Account account;
+	QString server_ip_address;
 	QString peer_number;
 	VoicePtr voice;
 };
@@ -68,6 +70,15 @@ struct ua *PhoneThread::ua()
 void PhoneThread::setAccount(const SIP::Account &account)
 {
 	m->account = account;
+
+	QString addr = m->account.server;
+	{
+		QStringList list = Network::resolveHostAddress(addr);
+		if (!list.empty()) {
+			addr = list.front();
+		}
+	}
+	m->server_ip_address = addr;
 }
 
 SIP::Account const &PhoneThread::account() const
@@ -233,13 +244,14 @@ void PhoneThread::event_handler(struct ua *ua, ua_event ev, struct call *call, c
 
 static QString makeServerAddress(SIP::Account const &a)
 {
+
 	QString addr = a.service_domain;
 	int i = addr.indexOf(':');
 	if (i >= 0) {
 		addr = addr.mid(0, i);
 	}
-	addr += ':';
-	addr += QString::number(a.port);
+//	addr += ':';
+//	addr += QString::number(a.port);
 	return addr;
 }
 
@@ -299,7 +311,7 @@ void PhoneThread::run()
 				.arg(m->account.phone_number)
 				.arg(makeServerAddress(m->account))
 				.arg(m->account.user)
-				.arg(QString("sip:%1:%2").arg(m->account.server).arg(m->account.port))
+				.arg(QString("sip:%1:%2").arg(m->server_ip_address).arg(m->account.port))
 				;
 		ua_init(uaName(), false, true, true, true, false);
 		ua_alloc((struct ua **)&m->ua, aor.toLatin1(), m->account.password.toLatin1(), m->account.phone_number.toLatin1());

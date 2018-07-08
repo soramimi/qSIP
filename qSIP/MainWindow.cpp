@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "Network.h"
 #include "ui_MainWindow.h"
 
 #include "PhoneThread.h"
@@ -58,6 +59,19 @@ void MainWindow::close()
 	ui->widget_phone->close();
 }
 
+#include <QKeyEvent>
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+	switch (event->key()) {
+	case Qt::Key_T:
+		if (QApplication::queryKeyboardModifiers() & Qt::ControlModifier) {
+			test();
+		}
+		return;
+	}
+	return QMainWindow::keyPressEvent(event);
+}
+
 void MainWindow::reregister(SIP::Account const &a)
 {
 	ui->widget_phone->setup(a);
@@ -75,12 +89,15 @@ void MainWindow::on_action_settings_triggered()
 		ApplicationSettings const &newsettings = dlg.settings();
 		bool eq = m->appsettings.account == newsettings.account;
 		m->appsettings = newsettings;
-		if (!eq) {
+//		if (!eq) {
 			reregister();
-		}
+//		}
 	}
 }
 
-void MainWindow::on_action_test_triggered()
+void MainWindow::test()
 {
+	reregister();
+
+	qDebug() << Network::resolveHostAddress(m->appsettings.account.server);
 }

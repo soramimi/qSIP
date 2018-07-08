@@ -19,7 +19,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>SIP/registration server</string>
+        <string>SIP registration server</string>
        </property>
       </widget>
      </item>
