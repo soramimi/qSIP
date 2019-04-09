@@ -12,10 +12,8 @@ class PhoneWidget;
 
 typedef std::function<void (int, QString)> handler_fn_t;
 
-class PhoneWidget : public QWidget
-{
+class PhoneWidget : public QWidget {
 	Q_OBJECT
-public:
 private:
 	struct Private;
 	Private *m;

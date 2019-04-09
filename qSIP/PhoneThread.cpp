@@ -1,15 +1,15 @@
-#include "Network.h"
-#include "PhoneThread.h"
-#include <string.h>
-#include <QDebug>
 
-#include <re.h>
+#include "PhoneThread.h"
+#include "Network.h"
+#include <QDebug>
 #include <baresip.h>
+#include <re.h>
+#include <string.h>
 
 #ifndef Q_OS_WIN
-#include <sys/types.h>
-#include <signal.h>
 #include <pthread.h>
+#include <signal.h>
+#include <sys/types.h>
 #endif
 
 struct PhoneThread::Private {

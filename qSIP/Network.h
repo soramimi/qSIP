@@ -3,10 +3,7 @@
 
 #include <QStringList>
 
-
-
-class Network
-{
+class Network {
 public:
 	Network();
 	static QStringList resolveHostAddress(QString const &name);

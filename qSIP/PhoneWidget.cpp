@@ -1,6 +1,6 @@
-#include "PhoneThread.h"
 #include "PhoneWidget.h"
 #include "ui_PhoneWidget.h"
+#include "PhoneThread.h"
 #include <QDateTime>
 #include <QDebug>
 #include <memory>
@@ -65,13 +65,13 @@ void PhoneWidget::setup(SIP::Account const &account)
 	m->phone = std::shared_ptr<PhoneThread>(new PhoneThread("qSIP"));
 	m->phone->setAccount(account);
 
-	connect(m->phone.get(), SIGNAL(registered(bool)), this, SLOT(onRegistered(bool)));
-	connect(m->phone.get(), SIGNAL(state_changed(int)), this, SLOT(onStateChanged(int)));
-	connect(m->phone.get(), SIGNAL(call_incoming(QString)), this, SLOT(onCallIncoming(QString)));
-	connect(m->phone.get(), SIGNAL(incoming_established()), this, SLOT(onIncomingEstablished()));
-	connect(m->phone.get(), SIGNAL(outgoing_established()), this, SLOT(onOutgoingEstablished()));
-	connect(m->phone.get(), SIGNAL(closed(int, int)), this, SLOT(onClosed(int, int)));
-	connect(m->phone.get(), SIGNAL(dtmf_input(QString)), this, SLOT(onDTMF(QString)));
+	connect(m->phone.get(), &PhoneThread::registered, this, &PhoneWidget::onRegistered);
+	connect(m->phone.get(), &PhoneThread::state_changed, this, &PhoneWidget::onStateChanged);
+	connect(m->phone.get(), &PhoneThread::call_incoming, this, &PhoneWidget::onCallIncoming);
+	connect(m->phone.get(), &PhoneThread::incoming_established, this, &PhoneWidget::onIncomingEstablished);
+	connect(m->phone.get(), &PhoneThread::outgoing_established, this, &PhoneWidget::onOutgoingEstablished);
+	connect(m->phone.get(), &PhoneThread::closed, this, &PhoneWidget::onClosed);
+	connect(m->phone.get(), &PhoneThread::dtmf_input, this, &PhoneWidget::onDTMF);
 
 	m->phone->start();
 

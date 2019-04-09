@@ -3,7 +3,8 @@
 
 #include <QThread>
 #include "Account.h"
-#include "memory"
+#include <memory>
+#include <stdint.h>
 
 #ifndef Q_OS_WIN
 #include <re_list.h>

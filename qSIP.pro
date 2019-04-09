@@ -8,6 +8,7 @@ QT       += core gui widgets multimedia
 
 TARGET = qSIP
 TEMPLATE = app
+CONFIG += c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS
 

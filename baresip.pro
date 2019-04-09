@@ -4,7 +4,7 @@ QT -= gui
 CONFIG(release, debug|release):TARGET = baresip
 CONFIG(debug, debug|release):TARGET = baresipd
 TEMPLATE = lib
-CONFIG += staticlib
+CONFIG += staticlib c++11
 CONFIG -= app_bundle
 
 QMAKE_CFLAGS += -std=c11

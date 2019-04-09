@@ -97,7 +97,7 @@ void MainWindow::on_action_settings_triggered()
 
 void MainWindow::test()
 {
-	reregister();
+//	reregister();
 
 	qDebug() << Network::resolveHostAddress(m->appsettings.account.server);
 }
