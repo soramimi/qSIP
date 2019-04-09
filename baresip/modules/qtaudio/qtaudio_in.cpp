@@ -1,11 +1,7 @@
 #ifdef UNICODE
 #undef UNICODE
 #endif
-/**
- * @file qtaudio/src.c Windows sound driver -- source
- *
- * Copyright (C) 2010 Creytiv.com
- */
+
 #include <new>
 #include <re.h>
 #include <rem.h>
@@ -41,6 +37,7 @@ private:
 
 	std::shared_ptr<QAudioInput> input;
 	QIODevice *device;
+
 protected:
 	void run()
 	{
@@ -61,7 +58,7 @@ protected:
 
 			int len = buf.size();
 			if (input->bytesReady() < len) {
-				msleep(1);
+				QThread::yieldCurrentThread();
 			} else {
 				char *p = &buf[0];
 				len = device->read(p, len);

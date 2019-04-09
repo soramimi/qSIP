@@ -1,8 +1,4 @@
-/**
- * @file qtaudio.c Qt sound driver
- *
- * Copyright (C) 2017 S.Fuchita
- */
+
 #include <re.h>
 #include <rem.h>
 #include <baresip.h>
