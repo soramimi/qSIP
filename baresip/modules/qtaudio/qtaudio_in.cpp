@@ -51,7 +51,7 @@ protected:
         format.setSampleType(QAudioFormat::SignedInt);
 		format.setByteOrder(QAudioFormat::LittleEndian);
 		input = std::shared_ptr<QAudioInput>(new QAudioInput(defdev, format));
-        device = input->start();
+		device = input->start();
 
         std::vector<char> buf(frame_size * 2);
 		while (1) {

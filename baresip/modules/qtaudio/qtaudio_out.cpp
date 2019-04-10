@@ -41,6 +41,8 @@ static const int dtmf_fq[8] = { 697, 770, 852, 941, 1209, 1336, 1477, 1633 };
 
 double goertzel(int size, int16_t const *data, int sample_fq, int detect_fq)
 {
+	if (size < 2) return 0;
+
 	double omega = PI2 * detect_fq / sample_fq;
 	double sine = sin(omega);
 	double cosine = cos(omega);
@@ -134,7 +136,7 @@ protected:
         format.setSampleType(QAudioFormat::SignedInt);
 		format.setByteOrder(QAudioFormat::LittleEndian);
 		output = std::shared_ptr<QAudioOutput>(new QAudioOutput(defdev, format));
-        device = output->start();
+		device = output->start();
 
         std::vector<char> buf(frame_size * 2);
 		while (1) {
