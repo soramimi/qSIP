@@ -17,7 +17,7 @@
 #include <re_udp.h>
 #include <re_sip.h>
 #include "sip.h"
-#include <malloc.h>
+#include <stdlib.h>
 
 struct sip_auth {
 	struct list realml;
