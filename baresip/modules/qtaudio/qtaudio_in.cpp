@@ -36,42 +36,54 @@ private:
 	user_notify_fn user_notify;
 	user_filter_fn user_input_filter;
 
-	std::shared_ptr<QAudioInput> input;
-	QIODevice *device;
+	std::shared_ptr<QAudioInput> audio_input_;
+	QIODevice *audio_input_device_;
+	QAudioInput *audio_input()
+	{
+		return audio_input_.get();
+	}
+	QIODevice *audio_input_device()
+	{
+		return audio_input_device_;
+	}
+
+	int read_audio_input(char *ptr, int len)
+	{
+		if (audio_input()->bytesReady() < len) {
+			len = 0;
+		} else {
+			len = audio_input_device()->read(ptr, len);
+		}
+		return len;
+	}
 
 protected:
 	void run()
 	{
 		QAudioDeviceInfo defdev = QAudioDeviceInfo::defaultInputDevice();
-        QAudioFormat format;
+		QAudioFormat format;
 		format.setChannelCount(1);
 		format.setSampleRate(8000);
 		format.setSampleSize(16);
 		format.setCodec("audio/pcm");
-        format.setSampleType(QAudioFormat::SignedInt);
+		format.setSampleType(QAudioFormat::SignedInt);
 		format.setByteOrder(QAudioFormat::LittleEndian);
-		input = std::shared_ptr<QAudioInput>(new QAudioInput(defdev, format));
-		device = input->start();
+		audio_input_ = std::shared_ptr<QAudioInput>(new QAudioInput(defdev, format));
+		audio_input_device_ = audio_input_->start();
 
-        std::vector<char> buf(frame_size * 2);
-		while (1) {
-			if (isInterruptionRequested()) break;
-
-			int len = buf.size();
-			if (input->bytesReady() < len) {
-				QThread::yieldCurrentThread();
-			} else {
-				char *p = &buf[0];
-				len = device->read(p, len);
-
+		std::vector<char> buf(frame_size * 2);
+		while (!isInterruptionRequested()) {
+			int len = read_audio_input(&buf[0], buf.size());
+			len /= 2;
+			if (len > 0) {
+				void *ptr = &buf[0];
 				if (user_input_filter) {
-					int n = len / 2;
-					user_input_filter(user_cookie, (int16_t *)p, n);
+					user_input_filter(user_cookie, (int16_t *)ptr, len);
 				}
-
-				sink((uint8_t *)p, len, arg);
+				sink((uint8_t *)ptr, len * 2, arg);
 			}
-            QCoreApplication::processEvents();
+			QCoreApplication::processEvents();
+			yieldCurrentThread();
 		}
 	}
 public:

@@ -73,8 +73,24 @@ private:
 	user_notify_fn user_notify;
 	user_filter_fn user_output_filter;
 
-	std::shared_ptr<QAudioOutput> output;
-	QIODevice *device;
+	std::shared_ptr<QAudioOutput> audio_output_;
+	QIODevice *audio_output_device_;
+	QAudioOutput *audio_output()
+	{
+		return audio_output_.get();
+	}
+	QIODevice *audio_output_device()
+	{
+		return audio_output_device_;
+	}
+	int write_audio_output(char *ptr, int len)
+	{
+		if (ptr) {
+			return audio_output_device()->write(ptr, len);
+		} else {
+			return audio_output()->bytesFree();
+		}
+	}
 
 	int dtmf_value = 0;
 	int dtmf_count = 0;
@@ -110,7 +126,6 @@ private:
 			if (dtmf_count < MIN_COUNT) {
 				dtmf_count += size;
 				if (dtmf_count >= MIN_COUNT) {
-//					qDebug() << (char)dtmf_value;
 					if (user_notify) {
 						char tmp[100];
 						sprintf(tmp, "<dtmf>%c", dtmf_value);
@@ -131,28 +146,29 @@ protected:
 		QAudioFormat format;
 		format.setChannelCount(1);
 		format.setSampleRate(8000);
-        format.setSampleSize(16);
+		format.setSampleSize(16);
 		format.setCodec("audio/pcm");
-        format.setSampleType(QAudioFormat::SignedInt);
+		format.setSampleType(QAudioFormat::SignedInt);
 		format.setByteOrder(QAudioFormat::LittleEndian);
-		output = std::shared_ptr<QAudioOutput>(new QAudioOutput(defdev, format));
-		device = output->start();
+		audio_output_ = std::shared_ptr<QAudioOutput>(new QAudioOutput(defdev, format));
+		audio_output_device_ = audio_output_->start();
 
-        std::vector<char> buf(frame_size * 2);
-		while (1) {
-			if (isInterruptionRequested()) break;
-			int n = output->bytesFree();
-			if (n < (int)buf.size()) {
-				QThread::yieldCurrentThread();
-			} else if (source((uint8_t *)&buf[0], buf.size(), arg)) {
-				if (user_output_filter) {
-					int n = buf.size() / 2;
-					user_output_filter(user_cookie, (int16_t *)&buf[0], n);
+		std::vector<char> buf(frame_size * 2);
+		while (!isInterruptionRequested()) {
+			int len = write_audio_output(nullptr, 0);
+			if (len >= buf.size() && source((uint8_t *)&buf[0], buf.size(), arg)) {
+				len = buf.size();
+				write_audio_output(&buf[0], len);
+				len /= 2;
+				if (len > 0) {
+					int16_t *ptr = (int16_t *)&buf[0];
+					if (user_output_filter) {
+						user_output_filter(user_cookie, ptr, len);
+					}
+					detect_dtmf(len, ptr);
 				}
-				device->write(&buf[0], buf.size());
-				detect_dtmf(buf.size() / 2, (int16_t const *)&buf[0]);
 			}
-            QCoreApplication::processEvents();
+			yieldCurrentThread();
 		}
 	}
 public:
