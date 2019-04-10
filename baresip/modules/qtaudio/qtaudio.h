@@ -14,7 +14,7 @@ int qtaudio_src_alloc(struct ausrc_st **stp, struct ausrc *as,
 		      ausrc_read_h *rh, ausrc_error_h *errh, void *arg, struct user_extra_data_t *user_data);
 int qtaudio_play_alloc(struct auplay_st **stp, struct auplay *ap,
 		       struct auplay_prm *prm, const char *device,
-			   auplay_write_h *wh, void *arg, void *user_data);
+			   auplay_write_h *wh, void *arg, struct user_extra_data_t *user_data);
 
 #ifdef __cplusplus
 }

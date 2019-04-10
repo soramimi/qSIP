@@ -91,8 +91,7 @@ static void destructor(void *arg)
 }
 
 
-static void terminate(struct sip_request *req, int err,
-			  const struct sip_msg *msg, void *user_data)
+static void terminate(struct sip_request *req, int err, const struct sip_msg *msg, void *user_data)
 {
 	if (req->reqp) {
 		*req->reqp = NULL;
@@ -157,8 +156,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg, void
 }
 
 
-static int request(struct sip_request *req, enum sip_transp tp,
-		   const struct sa *dst)
+static int request(struct sip_request *req, enum sip_transp tp, const struct sa *dst)
 {
 	struct mbuf *mb = NULL;
 	char *branch = NULL;

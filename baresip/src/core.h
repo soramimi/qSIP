@@ -130,7 +130,7 @@ void audio_stop(struct audio *a);
 int  audio_encoder_set(struct audio *a, const struct aucodec *ac,
 		       int pt_tx, const char *params, struct user_extra_data_t *user_data);
 int  audio_decoder_set(struct audio *a, const struct aucodec *ac,
-		       int pt_rx, const char *params);
+		       int pt_rx, const char *params, void *user_data);
 struct stream *audio_strm(const struct audio *a);
 int  audio_send_digit(struct audio *a, char key);
 void audio_sdp_attr_decode(struct audio *a);

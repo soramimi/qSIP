@@ -32,8 +32,9 @@ private:
 
 	ausrc_read_h *sink;
 	void *arg;
-	user_filter_fn user_filter;
 	void *user_cookie;
+	user_notify_fn user_notify;
+	user_filter_fn user_input_filter;
 
 	std::shared_ptr<QAudioInput> input;
 	QIODevice *device;
@@ -63,9 +64,9 @@ protected:
 				char *p = &buf[0];
 				len = device->read(p, len);
 
-				if (user_filter) {
+				if (user_input_filter) {
 					int n = len / 2;
-					user_filter(user_cookie, (int16_t *)p, n);
+					user_input_filter(user_cookie, (int16_t *)p, n);
 				}
 
 				sink((uint8_t *)p, len, arg);
@@ -85,8 +86,9 @@ public:
 		this->sink = sink;
 		this->arg = arg;
 		this->frame_size = frame_size;
-		this->user_filter = user_data ? user_data->filter : nullptr;
 		this->user_cookie = user_data ? user_data->cookie : nullptr;
+		this->user_notify = user_data ? user_data->notify : nullptr;
+		this->user_input_filter = user_data ? user_data->input_filter : nullptr;
 		start();
 	}
 };

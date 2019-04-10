@@ -49,24 +49,21 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg, v
 		sess->hdrs = mem_deref(sess->hdrs);
 
 		err = sip_dialog_create(sess->dlg, msg);
-		if (err)
-			goto out;
+		if (err) goto out;
 
-		if (sess->sent_offer)
+		if (sess->sent_offer) {
 			err = sess->answerh(msg, sess->arg, user_data);
-		else {
+		} else {
 			sess->modify_pending = false;
 			err = sess->offerh(&desc, msg, sess->arg);
 		}
 
-		err |= sipsess_ack(sess->sock, sess->dlg, msg->cseq.num,
-				   sess->auth, sess->ctype, desc);
+		err |= sipsess_ack(sess->sock, sess->dlg, msg->cseq.num, sess->auth, sess->ctype, desc);
 
 		sess->established = true;
 		mem_deref(desc);
 
-		if (err || sess->terminated)
-			goto out;
+		if (err || sess->terminated) goto out;
 
 		if (sess->modify_pending)
 			(void)sipsess_reinvite(sess, true);
@@ -75,27 +72,21 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg, v
 
 		sess->estabh(msg, sess->arg);
 		return;
-	}
-	else if (msg->scode < 400) {
+	} else if (msg->scode < 400) {
 
 		/* Redirect to first Contact */
 
-		if (sess->terminated)
-			goto out;
+		if (sess->terminated) goto out;
 
 		err = sip_dialog_update(sess->dlg, msg);
-		if (err)
-			goto out;
+		if (err) goto out;
 
 		err = invite(sess);
-		if (err)
-			goto out;
+		if (err) goto out;
 
 		return;
-	}
-	else {
-		if (sess->terminated)
-			goto out;
+	} else {
+		if (sess->terminated) goto out;
 
 		switch (msg->scode) {
 
@@ -116,10 +107,11 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg, v
 	}
 
  out:
-	if (!sess->terminated)
+	if (!sess->terminated) {
 		sipsess_terminate(sess, err, msg);
-	else
+	} else {
 		mem_deref(sess);
+	}
 }
 
 

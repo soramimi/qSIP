@@ -92,7 +92,7 @@ const struct auplay *auplay_find(const char *name)
  */
 int auplay_alloc(struct auplay_st **stp, const char *name,
 		 struct auplay_prm *prm, const char *device,
-		 auplay_write_h *wh, void *arg)
+		 auplay_write_h *wh, void *arg, struct user_extra_data_t *user_data)
 {
 	struct auplay *ap;
 
@@ -103,5 +103,5 @@ int auplay_alloc(struct auplay_st **stp, const char *name,
 	if (!prm->srate || !prm->ch)
 		return EINVAL;
 
-	return ap->alloch(stp, ap, prm, device, wh, arg, NULL);
+	return ap->alloch(stp, ap, prm, device, wh, arg, user_data);
 }

@@ -21,7 +21,7 @@ struct PhoneThread::Private {
 	Direction direction = Direction::None;
 	struct ua *ua = nullptr;
 	struct call *call = nullptr;
-	user_extra_data_t user_extra_data;
+	user_extra_data_t user_extra_data = {};
 	SIP::Account account;
 	QString server_ip_address;
 	QString peer_number;
@@ -316,8 +316,6 @@ void PhoneThread::run()
 		ua_init(uaName(), false, true, true, true, false);
 		ua_alloc((struct ua **)&m->ua, aor.toLatin1(), m->account.password.toLatin1(), m->account.phone_number.toLatin1());
 	}
-//	m->user_extra_data.audio_source_filter_fn = custom_filter_handler;
-//	m->user_extra_data.cookie = this;
 	setState(PhoneState::Idle);
 
 	while (1) {
@@ -325,8 +323,9 @@ void PhoneThread::run()
             qDebug() << "interrupted";
             break;
         }
-		m->user_extra_data.filter = custom_filter_handler;
 		m->user_extra_data.cookie = this;
+		m->user_extra_data.notify = custom_notify_handler;
+		m->user_extra_data.input_filter = custom_audio_input_filter_handler;
 		int r = re_main(signal_handler, control_handler, &m->user_extra_data);
 		if (r == EINTR || r == ENOENT) {
 			// continue
@@ -365,7 +364,25 @@ void PhoneThread::hangup()
 	setState(PhoneState::Idle);
 }
 
-void PhoneThread::custom_filter(int16_t *ptr, int len)
+void PhoneThread::custom_notify(char const *ptr, int len)
+{
+	if (len > 6 && strncmp(ptr, "<dtmf>", 6) == 0) {
+		char tmp[2];
+		tmp[0] = ptr[6];
+		tmp[1] = 0;
+		emit dtmf_input(tmp);
+	}
+}
+
+void PhoneThread::custom_notify_handler(void *cookie, char const *ptr, int len)
+{
+	PhoneThread *my = reinterpret_cast<PhoneThread *>(cookie);
+	if (my) {
+		my->custom_notify(ptr, len);
+	}
+}
+
+void PhoneThread::custom_audio_input_filter(int16_t *ptr, int len)
 {
 	if (m->voice) {
 		int n = m->voice->count;
@@ -385,21 +402,12 @@ void PhoneThread::custom_filter(int16_t *ptr, int len)
 	}
 }
 
-void PhoneThread::custom_filter_handler(void *cookie, int16_t *ptr, int len)
+void PhoneThread::custom_audio_input_filter_handler(void *cookie, int16_t *ptr, int len)
 {
-#if 0
-	(void)cookie;
-	int i = 0;
-	while (i < len) {
-		ptr[i + 0] = (i & 4) ? 8192 : -8192;
-		i++;
-	}
-#else
 	PhoneThread *my = reinterpret_cast<PhoneThread *>(cookie);
 	if (my) {
-		my->custom_filter(ptr, len);
+		my->custom_audio_input_filter(ptr, len);
 	}
-#endif
 }
 
 void PhoneThread::answer()

@@ -241,7 +241,7 @@ int winwave_src_alloc(struct ausrc_st **stp, struct ausrc *as,
 	st->as  = mem_ref(as);
 	st->rh  = rh;
 	st->arg = arg;
-	st->user_filter = user_data ? user_data->filter : NULL;
+	st->user_filter = user_data ? user_data->input_filter : NULL;
 	st->user_cookie = user_data ? user_data->cookie : NULL;
 
 	prm->fmt = AUFMT_S16LE;

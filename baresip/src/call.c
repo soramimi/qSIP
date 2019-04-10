@@ -131,8 +131,7 @@ static void call_stream_start(struct call *call, bool active)
 				DEBUG_WARNING("call: start:"
 					" audio_encoder_set error: %m\n", err);
 			}
-			err |= audio_decoder_set(call->audio, sc->data,
-						 sc->pt, sc->params);
+			err |= audio_decoder_set(call->audio, sc->data, sc->pt, sc->params, NULL);
 			if (err) {
 				DEBUG_WARNING("call: start:"
 					" audio_decoder_set error: %m\n", err);
@@ -313,7 +312,7 @@ static int update_media(struct call *call, struct user_extra_data_t *user_data)
 	if (sc) {
 		struct aucodec *ac = sc->data;
 		if (ac) {
-			err  = audio_decoder_set(call->audio, sc->data, sc->pt, sc->params);
+			err  = audio_decoder_set(call->audio, sc->data, sc->pt, sc->params, user_data);
 			err |= audio_encoder_set(call->audio, sc->data, sc->pt, sc->params, user_data);
 		}
 		else {

@@ -203,8 +203,7 @@ static int aufile_load(struct mbuf *mb, const char *filename,
  *
  * @return 0 if success, otherwise errorcode
  */
-int play_tone(struct play **playp, struct mbuf *tone, uint32_t srate,
-	      uint8_t ch, int repeat)
+int play_tone(struct play **playp, struct mbuf *tone, uint32_t srate, uint8_t ch, int repeat, void *user_data)
 {
 	struct auplay_prm wprm;
 	struct play *play;
@@ -230,8 +229,7 @@ int play_tone(struct play **playp, struct mbuf *tone, uint32_t srate,
 	wprm.srate      = srate;
 	wprm.frame_size = srate * ch * 100 / 1000;
 
-	err = auplay_alloc(&play->auplay, cfg_audio.alert_mod, &wprm,
-			   cfg_audio.alert_dev, write_handler, play);
+	err = auplay_alloc(&play->auplay, cfg_audio.alert_mod, &wprm, cfg_audio.alert_dev, write_handler, play, user_data);
 	if (err)
 		goto out;
 
@@ -260,7 +258,7 @@ int play_tone(struct play **playp, struct mbuf *tone, uint32_t srate,
  *
  * @return 0 if success, otherwise errorcode
  */
-int play_file(struct play **playp, const char *filename, int repeat)
+int play_file(struct play **playp, const char *filename, int repeat, void *user_data)
 {
 	struct mbuf *mb;
 	char path[768];
@@ -285,7 +283,7 @@ int play_file(struct play **playp, const char *filename, int repeat)
 		goto out;
 	}
 
-	err = play_tone(playp, mb, srate, ch, repeat);
+	err = play_tone(playp, mb, srate, ch, repeat, user_data);
 
  out:
 	mem_deref(mb);

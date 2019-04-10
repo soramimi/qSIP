@@ -417,7 +417,7 @@ static void ausrc_error_handler(int err, const char *str, void *arg)
 }
 
 
-static int pt_handler(struct audio *a, uint8_t pt_old, uint8_t pt_new)
+static int pt_handler(struct audio *a, uint8_t pt_old, uint8_t pt_new, void *user_data)
 {
 	const struct sdp_format *lc;
 
@@ -430,7 +430,7 @@ static int pt_handler(struct audio *a, uint8_t pt_old, uint8_t pt_new)
 
 	a->rx.pt = pt_new;
 
-	return audio_decoder_set(a, lc->data, lc->pt, lc->params);
+	return audio_decoder_set(a, lc->data, lc->pt, lc->params, user_data);
 }
 
 
@@ -510,8 +510,7 @@ static int aurx_stream_decode(struct aurx *rx, struct mbuf *mb)
 
 
 /* Handle incoming stream data from the network */
-static void stream_recv_handler(const struct rtp_header *hdr,
-				struct mbuf *mb, void *arg)
+static void stream_recv_handler(const struct rtp_header *hdr, struct mbuf *mb, void *arg)
 {
 	struct audio *a = arg;
 	struct aurx *rx = &a->rx;
@@ -532,7 +531,7 @@ static void stream_recv_handler(const struct rtp_header *hdr,
 	/* XXX: this logic should be moved to stream.c */
 	if (hdr->pt != rx->pt) {
 
-		err = pt_handler(a, rx->pt, hdr->pt);
+		err = pt_handler(a, rx->pt, hdr->pt, NULL);
 		if (err) return;
 	}
 
@@ -904,7 +903,7 @@ static int start_player(struct aurx *rx, struct audio *a, struct user_extra_data
 		err = auplay_alloc(&rx->auplay,
 					rx->mod[0]?rx->mod:a->cfg.play_mod,
 				   &prm, rx->device,
-				   auplay_write_handler, a);
+				   auplay_write_handler, a, user_data);
 		if (err) {
 			DEBUG_WARNING("start_player failed (%s.%s): %m\n",
 				      a->cfg.play_mod, rx->device, err);
@@ -1139,7 +1138,7 @@ int audio_encoder_set(struct audio *a, const struct aucodec *ac,
 }
 
 
-int audio_decoder_set(struct audio *a, const struct aucodec *ac, int pt_rx, const char *params)
+int audio_decoder_set(struct audio *a, const struct aucodec *ac, int pt_rx, const char *params, void *user_data)
 {
 	struct aurx *rx;
 	bool reset = false;
@@ -1178,7 +1177,7 @@ int audio_decoder_set(struct audio *a, const struct aucodec *ac, int pt_rx, cons
 		/* Reset audio filter chain */
 		list_flush(&rx->filtl);
 
-		err |= audio_start(a, NULL);
+		err |= audio_start(a, user_data);
 	}
 
 	return err;
@@ -1376,7 +1375,7 @@ int audio_set_source(struct audio *au, const char *mod, const char *device)
 }
 
 
-int audio_set_player(struct audio *au, const char *mod, const char *device)
+int audio_set_player(struct audio *au, const char *mod, const char *device, void *user_data)
 {
 	struct aurx *rx;
 	int err;
@@ -1388,8 +1387,7 @@ int audio_set_player(struct audio *au, const char *mod, const char *device)
 	/* stop the audio device first */
 	rx->auplay = mem_deref(rx->auplay);
 
-	err = auplay_alloc(&rx->auplay, mod, &rx->auplay_prm, device,
-			   auplay_write_handler, au);
+	err = auplay_alloc(&rx->auplay, mod, &rx->auplay_prm, device, auplay_write_handler, au, user_data);
 	if (err) {
 		DEBUG_WARNING("audio: set_player failed (%s.%s): %m\n", mod, device, err);
 		return err;

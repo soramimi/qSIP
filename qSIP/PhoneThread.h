@@ -57,8 +57,10 @@ private:
 
 	static void event_handler(struct ua *ua, enum ua_event ev, struct call *call, const char *prm, void *arg);
 
-	static void custom_filter_handler(void *cookie, int16_t *ptr, int len);
-	void custom_filter(int16_t *ptr, int len);
+	void custom_notify(const char *ptr, int len);
+	void custom_audio_input_filter(int16_t *ptr, int len);
+	static void custom_notify_handler(void *cookie, const char *ptr, int len);
+	static void custom_audio_input_filter_handler(void *cookie, int16_t *ptr, int len);
 	void setState(PhoneState s);
 	void clearPeerUser();
 	const char *uaName() const;

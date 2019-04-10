@@ -247,26 +247,22 @@ unsigned int ua_regint(const struct ua *ua)
 
 int ua_reregister(struct ua *ua)
 {
-	if (!ua)
-		return EINVAL;
-	if (ua->acc->regint == 0)
-	{
+	if (!ua) return EINVAL;
+	if (ua->acc->regint == 0) {
 		return -1;
 	}
 	return ua_register(ua);
 }
 
-int ua_play_file(struct ua *ua, const char *filename, int repeat)
+int ua_play_file(struct ua *ua, const char *filename, int repeat, void *user_data)
 {
-	if (!ua)
-		return EINVAL;
-	return play_file(&ua->play, filename, repeat);
+	if (!ua) return EINVAL;
+	return play_file(&ua->play, filename, repeat, user_data);
 }
 
 int ua_play_stop(struct ua *ua)
 {
-	if (!ua)
-		return EINVAL;
+	if (!ua) return EINVAL;
 	ua->play = mem_deref(ua->play);
 	return 0;
 }
@@ -283,8 +279,7 @@ static const char *translate_errorcode(uint16_t scode)
 }
 
 
-static void call_event_handler(struct call *call, enum call_event ev,
-			       const char *str, void *arg)
+static void call_event_handler(struct call *call, enum call_event ev, const char *str, void *arg, void *user_data)
 {
 	struct ua *ua = arg;
 	const char *peeruri;
@@ -333,7 +328,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 		break;
 
 	case CALL_EVENT_RINGING:
-		(void)play_file(&ua->play, "ringback.wav", -1);
+		(void)play_file(&ua->play, "ringback.wav", -1, user_data);
 
 		ua_event(ua, UA_EVENT_CALL_RINGING, call, peeruri);
 		break;
@@ -357,7 +352,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 			const char *tone;
 			tone = translate_errorcode(call_scode(call));
 			if (tone)
-				(void)play_file(&ua->play, tone, 1);
+				(void)play_file(&ua->play, tone, 1, user_data);
 		}
 		ua_event(ua, UA_EVENT_CALL_CLOSED, call, str);
 		mem_deref(call);

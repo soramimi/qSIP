@@ -20,11 +20,14 @@ extern "C" {
 
 #include <stdint.h>
 
+typedef void (*user_notify_fn)(void *cookie, char const *ptr, int len);
 typedef void (*user_filter_fn)(void *cookie, int16_t *ptr, int len);
 
 struct user_extra_data_t {
 	void *cookie;
-	user_filter_fn filter;
+	user_notify_fn notify;
+	user_filter_fn input_filter;
+	user_filter_fn output_filter;
 };
 
 /* forward declarations */
@@ -351,14 +354,14 @@ typedef bool (auplay_write_h)(uint8_t *buf, size_t sz, void *arg);
 
 typedef int  (auplay_alloc_h)(struct auplay_st **stp, struct auplay *ap,
 			      struct auplay_prm *prm, const char *device,
-				  auplay_write_h *wh, void *arg, void *user_data);
+				  auplay_write_h *wh, void *arg, struct user_extra_data_t *user_data);
 
 int auplay_register(struct auplay **pp, const char *name,
 		    auplay_alloc_h *alloch);
 const struct auplay *auplay_find(const char *name);
 int auplay_alloc(struct auplay_st **stp, const char *name,
 		 struct auplay_prm *prm, const char *device,
-		 auplay_write_h *wh, void *arg);
+		 auplay_write_h *wh, void *arg, struct user_extra_data_t *user_data);
 
 /*
  * Audio recorder
@@ -469,9 +472,8 @@ struct dnsc     *net_dnsc(void);
 
 struct play;
 
-int  play_file(struct play **playp, const char *filename, int repeat);
-int  play_tone(struct play **playp, struct mbuf *tone,
-	       uint32_t srate, uint8_t ch, int repeat);
+int  play_file(struct play **playp, const char *filename, int repeat, void *user_data);
+int  play_tone(struct play **playp, struct mbuf *tone, uint32_t srate, uint8_t ch, int repeat, void *user_data);
 void play_init(const struct config *cfg);
 void play_close(void);
 void play_set_path(const char *path);
@@ -531,7 +533,7 @@ void ua_unregister(struct ua *ua);
 bool ua_isregistered(const struct ua *ua);
 unsigned int ua_regint(const struct ua *ua);
 int	ua_reregister(struct ua *ua);
-int ua_play_file(struct ua *ua, const char *filename, int repeat);
+int ua_play_file(struct ua *ua, const char *filename, int repeat, void *user_data);
 int ua_play_stop(struct ua *ua);
 const char     *ua_aor(const struct ua *ua);
 const char     *ua_cuser(const struct ua *ua);
@@ -825,7 +827,7 @@ void audio_set_rx_device(struct audio *a, const char *mod, const char *dev);
 void audio_set_tx_device(struct audio *a, const char *mod, const char *dev);
 /* change audio device: during call */
 int  audio_set_source(struct audio *au, const char *mod, const char *device);
-int  audio_set_player(struct audio *au, const char *mod, const char *device);
+int  audio_set_player(struct audio *au, const char *mod, const char *device, void *user_data);
 void audio_encoder_cycle(struct audio *audio);
 int  audio_debug(struct re_printf *pf, const struct audio *a);
 

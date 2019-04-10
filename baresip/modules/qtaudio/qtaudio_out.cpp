@@ -67,6 +67,9 @@ private:
 
 	auplay_write_h *source;
 	void *arg;
+	void *user_cookie;
+	user_notify_fn user_notify;
+	user_filter_fn user_output_filter;
 
 	std::shared_ptr<QAudioOutput> output;
 	QIODevice *device;
@@ -105,7 +108,12 @@ private:
 			if (dtmf_count < MIN_COUNT) {
 				dtmf_count += size;
 				if (dtmf_count >= MIN_COUNT) {
-					qDebug() << (char)dtmf_value;
+//					qDebug() << (char)dtmf_value;
+					if (user_notify) {
+						char tmp[100];
+						sprintf(tmp, "<dtmf>%c", dtmf_value);
+						user_notify(user_cookie, tmp, strlen(tmp));
+					}
 				}
 			}
 		} else {
@@ -135,6 +143,10 @@ protected:
 			if (n < (int)buf.size()) {
 				QThread::yieldCurrentThread();
 			} else if (source((uint8_t *)&buf[0], buf.size(), arg)) {
+				if (user_output_filter) {
+					int n = buf.size() / 2;
+					user_output_filter(user_cookie, (int16_t *)&buf[0], n);
+				}
 				device->write(&buf[0], buf.size());
 				detect_dtmf(buf.size() / 2, (int16_t const *)&buf[0]);
 			}
@@ -148,11 +160,14 @@ public:
 		wait();
 	}
 
-	void go(auplay_write_h *src, void *arg, int frame_size)
+	void go(auplay_write_h *src, void *arg, int frame_size, user_extra_data_t *user_data)
 	{
 		this->source = src;
 		this->arg = arg;
 		this->frame_size = frame_size;
+		this->user_cookie = user_data ? user_data->cookie : nullptr;
+		this->user_notify = user_data ? user_data->notify : nullptr;
+		this->user_output_filter = user_data ? user_data->output_filter : nullptr;
 		start();
 	}
 };
@@ -169,10 +184,9 @@ static void auplay_destructor(void *arg)
 	st->~auplay_st();
 }
 
-int qtaudio_play_alloc(auplay_st **stp, struct auplay *ap, auplay_prm *prm, const char *device, auplay_write_h *wh, void *arg, void *user_data)
+int qtaudio_play_alloc(auplay_st **stp, struct auplay *ap, auplay_prm *prm, const char *device, auplay_write_h *wh, void *arg, user_extra_data_t *user_data)
 {
 	(void)device;
-	(void)user_data;
 
 	if (!stp || !ap || !prm) return EINVAL;
 
@@ -183,7 +197,7 @@ int qtaudio_play_alloc(auplay_st **stp, struct auplay *ap, auplay_prm *prm, cons
 
 	new(st) auplay_st();
 	st->ap  = (struct auplay *)mem_ref(ap);
-	st->obj.go(wh, arg, prm->frame_size);
+	st->obj.go(wh, arg, prm->frame_size, user_data);
 
 	*stp = st;
 
