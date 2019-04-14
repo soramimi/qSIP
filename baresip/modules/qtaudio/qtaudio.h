@@ -1,8 +1,11 @@
 /**
  * @file qtaudio.h Qt sound driver -- internal api
  *
- * Copyright (C) 2017 S.fuchita
+ * Copyright (C) 2019 S.fuchita
  */
+
+#ifndef QTAUDIO_H
+#define QTAUDIO_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,4 +21,9 @@ int qtaudio_play_alloc(struct auplay_st **stp, struct auplay *ap,
 
 #ifdef __cplusplus
 }
+
+#include "audioio.h"
+
 #endif
+
+#endif // QTAUDIO_H

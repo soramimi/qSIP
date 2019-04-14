@@ -19,6 +19,12 @@
 #include "sip.h"
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
+
 struct sip_auth {
 	struct list realml;
 	sip_auth_h *authh;

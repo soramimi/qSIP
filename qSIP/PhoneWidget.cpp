@@ -60,18 +60,20 @@ void PhoneWidget::hangup()
 
 void PhoneWidget::setup(SIP::Account const &account)
 {
+	qDebug() << Q_FUNC_INFO;
+
 	close();
 
-	m->phone = std::shared_ptr<PhoneThread>(new PhoneThread("qSIP"));
+	m->phone = std::make_shared<PhoneThread>("qSIP");
 	m->phone->setAccount(account);
 
 	connect(m->phone.get(), &PhoneThread::registered, this, &PhoneWidget::onRegistered);
-	connect(m->phone.get(), &PhoneThread::state_changed, this, &PhoneWidget::onStateChanged);
-	connect(m->phone.get(), &PhoneThread::call_incoming, this, &PhoneWidget::onCallIncoming);
-	connect(m->phone.get(), &PhoneThread::incoming_established, this, &PhoneWidget::onIncomingEstablished);
-	connect(m->phone.get(), &PhoneThread::outgoing_established, this, &PhoneWidget::onOutgoingEstablished);
+	connect(m->phone.get(), &PhoneThread::stateChanged, this, &PhoneWidget::onStateChanged);
+	connect(m->phone.get(), &PhoneThread::callIncoming, this, &PhoneWidget::onCallIncoming);
+	connect(m->phone.get(), &PhoneThread::incomingEstablished, this, &PhoneWidget::onIncomingEstablished);
+	connect(m->phone.get(), &PhoneThread::outgoingEstablished, this, &PhoneWidget::onOutgoingEstablished);
 	connect(m->phone.get(), &PhoneThread::closed, this, &PhoneWidget::onClosed);
-	connect(m->phone.get(), &PhoneThread::dtmf_input, this, &PhoneWidget::onDTMF);
+	connect(m->phone.get(), &PhoneThread::inputDTMF, this, &PhoneWidget::onDTMF);
 
 	m->phone->start();
 

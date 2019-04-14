@@ -21,13 +21,18 @@ extern "C" {
 #include <stdint.h>
 
 typedef void (*user_notify_fn)(void *cookie, char const *ptr, int len);
-typedef void (*user_filter_fn)(void *cookie, int16_t *ptr, int len);
+typedef int (*user_io_fn)(void *cookie, char *ptr, int len);
+typedef void (*callback_fn)(void *cookie, void *audio_io);
 
 struct user_extra_data_t {
-	void *cookie;
-	user_notify_fn notify;
-	user_filter_fn input_filter;
-	user_filter_fn output_filter;
+//	void *cookie;
+//	user_notify_fn notify;
+	user_io_fn input_filter;
+	user_io_fn output_filter;
+	void *callback_input_p;
+	void *callback_output_p;
+	callback_fn callback_input_f;
+	callback_fn callback_output_f;
 };
 
 /* forward declarations */

@@ -13,9 +13,15 @@
 #include <baresip.h>
 #endif
 
+#include <baresip/modules/qtaudio/audioio.h>
+
 #ifdef bool
 #undef bool
 #endif
+
+class QAudioInput;
+class QAudioOutput;
+class QIODevice;
 
 struct Voice {
 	QByteArray ba;
@@ -45,25 +51,28 @@ enum class Condition {
 	Rejected,
 };
 
-class PhoneThread : public QThread {
+class PhoneThread : public QThread, public AudioIO {
 	Q_OBJECT
 private:
 	struct Private;
 	Private *m;
-	static void signal_handler(int sig);
+	static void signalHandler(int sig);
 
-	static void control_handler(void);
-	void onEvent(struct ua *ua, enum ua_event ev, struct call *call, const char *prm);
+	static void controlHandler(void);
+	void onPhoneEvent(struct ua *ua, enum ua_event ev, struct call *call, const char *prm);
 
-	static void event_handler(struct ua *ua, enum ua_event ev, struct call *call, const char *prm, void *arg);
+	static void eventHandler(struct ua *ua, enum ua_event ev, struct call *call, const char *prm, void *arg);
 
-	void custom_notify(const char *ptr, int len);
-	void custom_audio_input_filter(int16_t *ptr, int len);
-	static void custom_notify_handler(void *cookie, const char *ptr, int len);
-	static void custom_audio_input_filter_handler(void *cookie, int16_t *ptr, int len);
 	void setState(PhoneState s);
 	void clearPeerUser();
 	const char *uaName() const;
+	QAudioInput *audioInput();
+	QIODevice *audioInputDevice();
+	QAudioOutput *audioOutput();
+	QIODevice *audioOutputDevice();
+	void customNotify(const char *ptr, int len);
+	void detectDTMF(int size, const int16_t *data);
+	void resetCallbackPtr();
 public:
 	PhoneThread(const std::string &user_agent);
 	~PhoneThread();
@@ -93,15 +102,22 @@ public:
 
 protected:
 	void run();
+	void timerEvent(QTimerEvent *);
 signals:
 	void registered(bool reg);
 	void unregistering();
-	void call_incoming(QString const &from);
+	void callIncoming(QString const &from);
 	void closed(int dir, int condition);
-	void incoming_established();
-	void outgoing_established();
-	void dtmf_input(QString const &text);
-	void state_changed(int);
+	void incomingEstablished();
+	void outgoingEstablished();
+	void inputDTMF(QString const &text);
+	void stateChanged(int);
+
+
+	// AudioIO interface
+public:
+	int input(char *ptr, int len);
+	int output(char *ptr, int len);
 };
 
 

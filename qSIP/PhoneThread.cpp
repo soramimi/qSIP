@@ -2,20 +2,63 @@
 #include "PhoneThread.h"
 #include "Network.h"
 #include <QDebug>
-#include <baresip.h>
 #include <re.h>
+#include <baresip.h>
 #include <string.h>
+#include <QAudioInput>
+#include <QAudioOutput>
 
-#ifndef Q_OS_WIN
+#ifdef Q_OS_WIN
+#define _USE_MATH_DEFINES
+#else
 #include <pthread.h>
 #include <signal.h>
 #include <sys/types.h>
 #endif
 
+#include <QMutex>
+#include <math.h>
+
+// dtmf detection
+
+static const double  PI2 = M_PI * 2;
+
+static const int dtmf_fq[8] = { 697, 770, 852, 941, 1209, 1336, 1477, 1633 };
+
+double goertzel_(int size, int16_t const *data, int sample_fq, int detect_fq)
+{
+	if (size < 2) return 0;
+
+	double omega = PI2 * detect_fq / sample_fq;
+	double sine = sin(omega);
+	double cosine = cos(omega);
+	double coeff = cosine * 2;
+	double q0 = 0;
+	double q1 = 0;
+	double q2 = 0;
+
+	for (int i = 0; i < size; i++) {
+		q0 = coeff * q1 - q2 + data[i];
+		q2 = q1;
+		q1 = q0;
+	}
+
+	double real = (q1 - q2 * cosine) / (size / 2.0);
+	double imag = (q2 * sine) / (size / 2.0);
+
+	return sqrt(real * real + imag * imag);
+}
+
+const int DTMF_MIN_LEVEL = 500;
+const int DTMF_MIN_COUNT = 300;
+
+//
+
 struct PhoneThread::Private {
 #ifndef Q_OS_WIN
 	pthread_t thread_id = 0;
 #endif
+	QMutex mutex;
 	std::string user_agent;
 	PhoneState state = PhoneState::None;
 	Direction direction = Direction::None;
@@ -26,17 +69,154 @@ struct PhoneThread::Private {
 	QString server_ip_address;
 	QString peer_number;
 	VoicePtr voice;
+
+	std::shared_ptr<QAudioInput> audio_input;
+	std::shared_ptr<QAudioOutput> audio_output;
+	QIODevice *audio_input_device = nullptr;
+	QIODevice *audio_output_device = nullptr;
+
+	int dtmf_value = 0;
+	int dtmf_count = 0;
+
+	const int sample_fq = 8000;
+	double dtmf_levels[8] = {};
 };
 
 PhoneThread::PhoneThread(std::string const &user_agent)
 	: m(new Private)
 {
 	m->user_agent = user_agent;
+
+	QAudioFormat format;
+	format.setChannelCount(1);
+	format.setSampleRate(8000);
+	format.setSampleSize(16);
+	format.setCodec("audio/pcm");
+	format.setSampleType(QAudioFormat::SignedInt);
+	format.setByteOrder(QAudioFormat::LittleEndian);
+	QAudioDeviceInfo default_input = QAudioDeviceInfo::defaultInputDevice();
+	QAudioDeviceInfo default_output = QAudioDeviceInfo::defaultOutputDevice();
+	m->audio_input = std::shared_ptr<QAudioInput>(new QAudioInput(default_input, format));
+	m->audio_output = std::shared_ptr<QAudioOutput>(new QAudioOutput(default_output, format));
+	m->audio_output->setBufferSize(800);
+	m->audio_input_device = m->audio_input->start();
+	m->audio_output_device = m->audio_output->start();
+
+	startTimer(10);
 }
 
 PhoneThread::~PhoneThread()
 {
+	resetCallbackPtr();
 	delete m;
+}
+
+void PhoneThread::resetCallbackPtr()
+{
+	QMutexLocker lock(&m->mutex);
+	m->user_extra_data.callback_input_p = nullptr;
+	m->user_extra_data.callback_output_p = nullptr;
+	m->user_extra_data.callback_input_f = nullptr;
+	m->user_extra_data.callback_output_f = nullptr;
+}
+
+void PhoneThread::customNotify(char const *ptr, int len)
+{
+	if (len > 6 && strncmp(ptr, "<dtmf>", 6) == 0) {
+		char tmp[2];
+		tmp[0] = ptr[6];
+		tmp[1] = 0;
+		emit inputDTMF(tmp);
+	}
+}
+
+void PhoneThread::detectDTMF(int size, int16_t const *data)
+{
+	double (&levels)[8] = m->dtmf_levels;
+
+	for (int i = 0; i < 8; i++) {
+		levels[i] = goertzel_(size, data, m->sample_fq, dtmf_fq[i]);
+	}
+
+	int v = 0;
+	struct Tone {
+		int index;
+		int level;
+		Tone(int i, int v)
+			: index(i)
+			, level(v)
+		{
+		}
+	};
+	Tone lo[] = { Tone(0, levels[0]), Tone(1, levels[1]), Tone(2, levels[2]), Tone(3, levels[3]) };
+	Tone hi[] = { Tone(0, levels[4]), Tone(1, levels[5]), Tone(2, levels[6]), Tone(3, levels[7]) };
+	std::sort(lo, lo + 4, [](Tone const &l, Tone const &r){ return l.level > r.level; });
+	std::sort(hi, hi + 4, [](Tone const &l, Tone const &r){ return l.level > r.level; });
+	if (lo[0].level > DTMF_MIN_LEVEL && hi[0].level > DTMF_MIN_LEVEL && lo[0].level > lo[1].level * 3 && hi[0].level > hi[1].level * 3) {
+		int i = lo[0].index * 4 + hi[0].index;
+		v = "123A456B789C*0#D"[i];
+	}
+	if (v != 0 && v == m->dtmf_value) {
+		if (m->dtmf_count < DTMF_MIN_COUNT) {
+			m->dtmf_count += size;
+			if (m->dtmf_count >= DTMF_MIN_COUNT) {
+				char tmp[100];
+				sprintf(tmp, "<dtmf>%c", m->dtmf_value);
+				customNotify(tmp, strlen(tmp));
+			}
+		}
+	} else {
+		m->dtmf_value = v;
+		m->dtmf_count = 0;
+	}
+}
+
+int PhoneThread::input(char *ptr, int len)
+{
+	if (m->voice) {
+		int l = len / sizeof(int16_t);
+		int n = m->voice->count;
+		if (m->voice->pos < n) {
+			n -= m->voice->pos;
+			if (n > l) n = l;
+			int16_t *dst = (int16_t *)ptr;
+			if (m->voice->pos == 0) {
+				dst += l - n;
+			}
+			int16_t const *p = (int16_t const *)(m->voice->ba.data() + m->voice->offset) + m->voice->pos;
+			memcpy(dst, p, n * sizeof(int16_t));
+			m->voice->pos += n;
+		} else {
+			len = 0;
+		}
+	} else {
+		if (audioInput() && audioInputDevice()) {
+			if (audioInput()->bytesReady() < len) {
+				len = 0;
+			} else {
+				len = audioInputDevice()->read(ptr, len);
+			}
+		} else {
+			len = 0;
+		}
+	}
+	return len;
+}
+
+int PhoneThread::output(char *ptr, int len)
+{
+	if (!ptr) {
+		return audioOutput()->bytesFree();
+	}
+
+	audioOutputDevice()->write(ptr, len);
+
+	int l = len / 2;
+	if (l > 0) {
+		detectDTMF(l, (int16_t *)ptr);
+	}
+
+	return len;
 }
 
 char const *PhoneThread::uaName() const
@@ -58,7 +238,7 @@ void PhoneThread::setState(PhoneState s)
 {
 	if (m->state != s) {
 		m->state = s;
-		emit state_changed((int)m->state);
+		emit stateChanged((int)m->state);
 	}
 }
 
@@ -135,20 +315,12 @@ bool PhoneThread::isEndOfVoice() const
 	return true;
 }
 
-void PhoneThread::signal_handler(int sig)
-{
-}
-
-void PhoneThread::control_handler()
-{
-}
-
 void PhoneThread::clearPeerUser()
 {
 	m->peer_number = QString();
 }
 
-void PhoneThread::onEvent(struct ua *ua, ua_event ev, struct call *call, const char *prm)
+void PhoneThread::onPhoneEvent(struct ua *ua, ua_event ev, struct call *call, const char *prm)
 {
 	static char const *eventname[] = {
 		"UA_EVENT_REGISTERING",
@@ -196,10 +368,8 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, struct call *call, const c
 	case UA_EVENT_CALL_INCOMING:
 		setState(PhoneState::Incoming);
 		m->direction = Direction::Incoming;
-		{
-			if (prm && *prm) {
-				emit call_incoming(prm);
-			}
+		if (prm && *prm) {
+			emit callIncoming(prm);
 		}
 		break;
 	case UA_EVENT_CALL_OUTGOING:
@@ -215,14 +385,15 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, struct call *call, const c
 		setState(PhoneState::Established);
 		switch (m->direction) {
 		case Direction::Incoming:
-			emit incoming_established();
+			emit incomingEstablished();
 			break;
 		case Direction::Outgoing:
-			emit outgoing_established();
+			emit outgoingEstablished();
 			break;
 		}
 		break;
 	case UA_EVENT_CALL_CLOSED:
+		resetCallbackPtr();
 		m->call = nullptr;
 		clearPeerUser();
 		emit closed((int)direction(), (int)(m->state == PhoneState::Outgoing ? Condition::Rejected : Condition::None));
@@ -230,16 +401,16 @@ void PhoneThread::onEvent(struct ua *ua, ua_event ev, struct call *call, const c
 		setState(PhoneState::Idle);
 		break;
 	case UA_EVENT_CALL_DTMF_START:
-		emit dtmf_input(prm);
+		emit inputDTMF(prm);
 		qDebug() << prm;
 		break;
 	}
 }
 
-void PhoneThread::event_handler(struct ua *ua, ua_event ev, struct call *call, const char *prm, void *arg)
+void PhoneThread::eventHandler(struct ua *ua, ua_event ev, struct call *call, const char *prm, void *arg)
 {
 	PhoneThread *me = (PhoneThread *)arg;
-	me->onEvent(ua, ev, call, prm);
+	me->onPhoneEvent(ua, ev, call, prm);
 }
 
 static QString makeServerAddress(SIP::Account const &a)
@@ -250,8 +421,6 @@ static QString makeServerAddress(SIP::Account const &a)
 	if (i >= 0) {
 		addr = addr.mid(0, i);
 	}
-//	addr += ':';
-//	addr += QString::number(a.port);
 	return addr;
 }
 
@@ -285,6 +454,14 @@ bool PhoneThread::call(const QString &text)
 	return r == 0;
 }
 
+void PhoneThread::signalHandler(int sig)
+{
+}
+
+void PhoneThread::controlHandler()
+{
+}
+
 void PhoneThread::run()
 {
 #ifndef Q_OS_WIN
@@ -301,7 +478,7 @@ void PhoneThread::run()
 	strcpy(cfg->audio.play_mod, "qtaudio");
 	strcpy(cfg->audio.alert_mod, "qtaudio");
 
-	uag_event_register(event_handler, this);
+	uag_event_register(eventHandler, this);
 
 	if (m->account.server.isEmpty()) {
 		// nop
@@ -323,10 +500,8 @@ void PhoneThread::run()
             qDebug() << "interrupted";
             break;
         }
-		m->user_extra_data.cookie = this;
-		m->user_extra_data.notify = custom_notify_handler;
-		m->user_extra_data.input_filter = custom_audio_input_filter_handler;
-		int r = re_main(signal_handler, control_handler, &m->user_extra_data);
+		resetCallbackPtr();
+		int r = re_main(signalHandler, controlHandler, &m->user_extra_data);
 		if (r == EINTR || r == ENOENT) {
 			// continue
 		} else {
@@ -337,6 +512,17 @@ void PhoneThread::run()
 	ua_close();
 	mod_close();
 	libre_close();
+}
+
+void PhoneThread::timerEvent(QTimerEvent *)
+{
+	QMutexLocker lock(&m->mutex);
+	if (m->user_extra_data.callback_input_f) {
+		m->user_extra_data.callback_input_f(m->user_extra_data.callback_input_p, static_cast<AudioIO *>(this));
+	}
+	if (m->user_extra_data.callback_output_f) {
+		m->user_extra_data.callback_output_f(m->user_extra_data.callback_output_p, static_cast<AudioIO *>(this));
+	}
 }
 
 void PhoneThread::close()
@@ -364,50 +550,22 @@ void PhoneThread::hangup()
 	setState(PhoneState::Idle);
 }
 
-void PhoneThread::custom_notify(char const *ptr, int len)
+QAudioInput *PhoneThread::audioInput()
 {
-	if (len > 6 && strncmp(ptr, "<dtmf>", 6) == 0) {
-		char tmp[2];
-		tmp[0] = ptr[6];
-		tmp[1] = 0;
-		emit dtmf_input(tmp);
-	}
+	return m->audio_input.get();
+}
+QIODevice *PhoneThread::audioInputDevice()
+{
+	return m->audio_input_device;
 }
 
-void PhoneThread::custom_notify_handler(void *cookie, char const *ptr, int len)
+QAudioOutput *PhoneThread::audioOutput()
 {
-	PhoneThread *my = reinterpret_cast<PhoneThread *>(cookie);
-	if (my) {
-		my->custom_notify(ptr, len);
-	}
+	return m->audio_output.get();
 }
-
-void PhoneThread::custom_audio_input_filter(int16_t *ptr, int len)
+QIODevice *PhoneThread::audioOutputDevice()
 {
-	if (m->voice) {
-		int n = m->voice->count;
-		if (m->voice->pos < n) {
-			n -= m->voice->pos;
-			if (n > len) n = len;
-			int16_t *dst = ptr;
-			if (m->voice->pos == 0) {
-				dst += len - n;
-			}
-			int16_t const *p = (int16_t const *)(m->voice->ba.data() + m->voice->offset) + m->voice->pos;
-			memcpy(dst, p, n * sizeof(int16_t));
-			m->voice->pos += n;
-		} else {
-			memset(ptr, 0, len * sizeof(int16_t));
-		}
-	}
-}
-
-void PhoneThread::custom_audio_input_filter_handler(void *cookie, int16_t *ptr, int len)
-{
-	PhoneThread *my = reinterpret_cast<PhoneThread *>(cookie);
-	if (my) {
-		my->custom_audio_input_filter(ptr, len);
-	}
+	return m->audio_output_device;
 }
 
 void PhoneThread::answer()

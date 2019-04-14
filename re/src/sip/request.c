@@ -18,6 +18,12 @@
 
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
+
 struct sip_request {
 	struct le le;
 	struct list cachel;

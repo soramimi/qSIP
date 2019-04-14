@@ -17,7 +17,6 @@
 static struct ausrc *ausrc;
 static struct auplay *auplay;
 
-
 static int qtaudio_init(void)
 {
 	int err;

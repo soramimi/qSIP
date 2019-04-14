@@ -31,7 +31,8 @@ HEADERS += \
 	baresip/modules/dialog_info/dialog_info.h \
 	baresip/modules/recorder/wavfile.h \
 	include/module.h \
-    baresip/modules/qtaudio/qtaudio.h
+    baresip/modules/qtaudio/qtaudio.h \
+    baresip/modules/qtaudio/audioio.h
 
 SOURCES += \
 	baresip/src/ua.c \

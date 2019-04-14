@@ -23,7 +23,7 @@ QStringList Network::resolveHostAddress(const QString &name)
 	QByteArray ba = name.toLatin1();
 	char const *nameptr = ba;
 
-#if 0
+#if _WIN32
 	struct hostent *host;
 	uint32_t addr = inet_addr(nameptr);
 	if (addr == INADDR_NONE) {
