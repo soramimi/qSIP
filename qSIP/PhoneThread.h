@@ -19,6 +19,7 @@
 #undef bool
 #endif
 
+class ApplicationSettings;
 class QAudioInput;
 class QAudioOutput;
 class QIODevice;
@@ -74,7 +75,7 @@ private:
 	void detectDTMF(int size, const int16_t *data);
 	void resetCallbackPtr();
 public:
-	PhoneThread(const std::string &user_agent);
+	PhoneThread(const ApplicationSettings *as, const std::string &user_agent);
 	~PhoneThread();
 
 	PhoneState state() const;
@@ -84,8 +85,8 @@ public:
 	void hangup();
 	void answer();
 	void hold(bool f);
-	void setAccount(SIP::Account const &account);
-	SIP::Account const &account() const;
+	void setAccount(const ApplicationSettings &settings);
+	const ApplicationSettings &settings() const;
 
 	bool isRegistered() const;
 	bool isIdling() const;

@@ -21,7 +21,7 @@ private:
 	MainWindow *mainwindow_;
 
 	void loadSettings();
-	void saveSettings();
+	void saveSettings(ApplicationSettings *as);
 
 public:
 	explicit SettingsDialog(MainWindow *parent);

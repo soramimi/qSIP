@@ -18,6 +18,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
      <item>
       <widget class="QTreeWidget" name="treeWidget">
+       <property name="minimumSize">
+        <size>
+         <width>160</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="rootIsDecorated">
         <bool>false</bool>
        </property>
@@ -33,7 +39,7 @@
      </item>
      <item>
       <widget class="QStackedWidget" name="stackedWidget">
-       <widget class="QWidget" name="page_account">
+       <widget class="SettingAccountForm" name="page_account">
         <layout class="QVBoxLayout" name="verticalLayout">
          <property name="leftMargin">
           <number>0</number>
@@ -47,12 +53,9 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item>
-          <widget class="SettingAccountForm" name="widget" native="true"/>
-         </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page_2"/>
+       <widget class="SettingAudioDeviceForm" name="page_audio_device"/>
       </widget>
      </item>
     </layout>
@@ -95,6 +98,12 @@
    <class>SettingAccountForm</class>
    <extends>QWidget</extends>
    <header>SettingAccountForm.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SettingAudioDeviceForm</class>
+   <extends>QWidget</extends>
+   <header>SettingAudioDeviceForm.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

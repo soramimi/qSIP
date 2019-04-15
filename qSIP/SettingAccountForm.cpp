@@ -1,9 +1,9 @@
 #include "SettingAccountForm.h"
 #include "ui_SettingAccountForm.h"
 
-SettingAccountForm::SettingAccountForm(QWidget *parent) :
-	AbstractSettingForm(parent),
-	ui(new Ui::SettingAccountForm)
+SettingAccountForm::SettingAccountForm(QWidget *parent)
+	: AbstractSettingForm(parent)
+	, ui(new Ui::SettingAccountForm)
 {
 	ui->setupUi(this);
 }
@@ -45,7 +45,7 @@ void SettingAccountForm::exchange(bool save)
 
 void SettingAccountForm::on_pushButton_reregister_clicked()
 {
-	SIP::Account a;
-	exchangeAccount(true, &a);
-	mainwindow()->reregister(a);
+	ApplicationSettings as = *settings();
+	exchangeAccount(true, &as.account);
+	mainwindow()->reregister(as);
 }

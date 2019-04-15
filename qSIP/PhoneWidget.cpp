@@ -1,6 +1,7 @@
 #include "PhoneWidget.h"
 #include "ui_PhoneWidget.h"
 #include "PhoneThread.h"
+#include "main.h"
 #include <QDateTime>
 #include <QDebug>
 #include <memory>
@@ -58,14 +59,14 @@ void PhoneWidget::hangup()
 	if (m->phone) m->phone->hangup();
 }
 
-void PhoneWidget::setup(SIP::Account const &account)
+void PhoneWidget::setup(ApplicationSettings const &a)
 {
 	qDebug() << Q_FUNC_INFO;
 
 	close();
 
-	m->phone = std::make_shared<PhoneThread>("qSIP");
-	m->phone->setAccount(account);
+	m->phone = std::make_shared<PhoneThread>(&a, "qSIP");
+	m->phone->setAccount(a);
 
 	connect(m->phone.get(), &PhoneThread::registered, this, &PhoneWidget::onRegistered);
 	connect(m->phone.get(), &PhoneThread::stateChanged, this, &PhoneWidget::onStateChanged);
@@ -119,7 +120,7 @@ void PhoneWidget::updateRegistrationStatus()
 {
 	if (isRegistered()) {
 		QString s = "%1 Ready.";
-		s = s.arg(m->phone->account().phone_number);
+		s = s.arg(m->phone->settings().account.phone_number);
 		setRegistrationStatusText(s);
 	} else {
 		if (m->registration_seconds < 3) {
@@ -155,8 +156,7 @@ void PhoneWidget::onStateChanged(int state)
 void PhoneWidget::restart()
 {
 	if (!m->phone->reregister()) {
-		SIP::Account a = m->phone->account();
-		setup(a);
+		setup(m->phone->settings());
 	}
 }
 
@@ -188,7 +188,7 @@ void PhoneWidget::onIncomingEstablished()
 	m->dtmf.clear();
 
 	QString s = "Incoming call established from %1";
-	s = s.arg(m->phone->account().user);
+	s = s.arg(m->phone->settings().account.user);
 	setStatusText(s);
 }
 

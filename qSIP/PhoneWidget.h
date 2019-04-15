@@ -6,6 +6,8 @@
 #include <QWidget>
 #include <functional>
 
+class ApplicationSettings;
+
 namespace Ui {
 class PhoneWidget;
 }
@@ -21,7 +23,7 @@ public:
 	explicit PhoneWidget(QWidget *parent = 0);
 	virtual ~PhoneWidget();
 
-	void setup(const SIP::Account &account);
+	void setup(const ApplicationSettings &a);
 
 	bool isRegistered() const;
 	void close();

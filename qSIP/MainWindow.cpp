@@ -18,9 +18,6 @@ enum {
 struct MainWindow::Private {
 	StatusLabel *status_label;
 	ApplicationSettings appsettings;
-//	std::shared_ptr<PhoneThread> phone;
-//	QTime registration_time;
-//	int registration_seconds = 0;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -72,14 +69,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 	return QMainWindow::keyPressEvent(event);
 }
 
-void MainWindow::reregister(SIP::Account const &a)
+void MainWindow::reregister(ApplicationSettings const &a)
 {
 	ui->widget_phone->setup(a);
 }
 
 void MainWindow::reregister()
 {
-	reregister(m->appsettings.account);
+	reregister(m->appsettings);
 }
 
 void MainWindow::on_action_settings_triggered()
@@ -89,9 +86,7 @@ void MainWindow::on_action_settings_triggered()
 		ApplicationSettings const &newsettings = dlg.settings();
 		bool eq = m->appsettings.account == newsettings.account;
 		m->appsettings = newsettings;
-//		if (!eq) {
-			reregister();
-//		}
+		reregister();
 	}
 }
 

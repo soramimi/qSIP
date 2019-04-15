@@ -1,6 +1,7 @@
 
 #include "PhoneThread.h"
 #include "Network.h"
+#include "main.h"
 #include <QDebug>
 #include <re.h>
 #include <baresip.h>
@@ -65,7 +66,7 @@ struct PhoneThread::Private {
 	struct ua *ua = nullptr;
 	struct call *call = nullptr;
 	user_extra_data_t user_extra_data = {};
-	SIP::Account account;
+	ApplicationSettings settings;
 	QString server_ip_address;
 	QString peer_number;
 	VoicePtr voice;
@@ -82,10 +83,24 @@ struct PhoneThread::Private {
 	double dtmf_levels[8] = {};
 };
 
-PhoneThread::PhoneThread(std::string const &user_agent)
+PhoneThread::PhoneThread(ApplicationSettings const *as, std::string const &user_agent)
 	: m(new Private)
 {
 	m->user_agent = user_agent;
+
+	QAudioDeviceInfo idev = QAudioDeviceInfo::defaultInputDevice();
+	QAudioDeviceInfo odev = QAudioDeviceInfo::defaultOutputDevice();
+
+	for (auto const &info : QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
+		if (info.deviceName() == as->audio_input) {
+			idev = info;
+		}
+	}
+	for (auto const &info : QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)) {
+		if (info.deviceName() == as->audio_output) {
+			odev = info;
+		}
+	}
 
 	QAudioFormat format;
 	format.setChannelCount(1);
@@ -94,10 +109,8 @@ PhoneThread::PhoneThread(std::string const &user_agent)
 	format.setCodec("audio/pcm");
 	format.setSampleType(QAudioFormat::SignedInt);
 	format.setByteOrder(QAudioFormat::LittleEndian);
-	QAudioDeviceInfo default_input = QAudioDeviceInfo::defaultInputDevice();
-	QAudioDeviceInfo default_output = QAudioDeviceInfo::defaultOutputDevice();
-	m->audio_input = std::shared_ptr<QAudioInput>(new QAudioInput(default_input, format));
-	m->audio_output = std::shared_ptr<QAudioOutput>(new QAudioOutput(default_output, format));
+	m->audio_input = std::shared_ptr<QAudioInput>(new QAudioInput(idev, format));
+	m->audio_output = std::shared_ptr<QAudioOutput>(new QAudioOutput(odev, format));
 	m->audio_output->setBufferSize(800);
 	m->audio_input_device = m->audio_input->start();
 	m->audio_output_device = m->audio_output->start();
@@ -247,11 +260,11 @@ struct ua *PhoneThread::ua()
 	return m->ua;
 }
 
-void PhoneThread::setAccount(const SIP::Account &account)
+void PhoneThread::setAccount(ApplicationSettings const &as)
 {
-	m->account = account;
+	m->settings = as;
 
-	QString addr = m->account.server;
+	QString addr = m->settings.account.server;
 	{
 		QStringList list = Network::resolveHostAddress(addr);
 		if (!list.empty()) {
@@ -261,9 +274,9 @@ void PhoneThread::setAccount(const SIP::Account &account)
 	m->server_ip_address = addr;
 }
 
-SIP::Account const &PhoneThread::account() const
+ApplicationSettings const &PhoneThread::settings() const
 {
-	return m->account;
+	return m->settings;
 }
 
 QString PhoneThread::peerNumber() const
@@ -428,7 +441,7 @@ bool PhoneThread::call(const QString &text)
 {
 	clearPeerUser();
 
-	if (m->account.server.isEmpty()) return false;
+	if (m->settings.account.server.isEmpty()) return false;
 
 	QString peer_number;
 
@@ -446,7 +459,7 @@ bool PhoneThread::call(const QString &text)
 	if (peer_number.isEmpty()) return false;
 
 	QString url = "sip:%1@%2";
-	url = url.arg(peer_number).arg(makeServerAddress(m->account));
+	url = url.arg(peer_number).arg(makeServerAddress(m->settings.account));
 	int r = ua_connect((struct ua *)m->ua, &m->call, nullptr, url.toLatin1(), nullptr, VIDMODE_OFF);
 	if (r == 0) {
 		m->peer_number = peer_number;
@@ -480,18 +493,18 @@ void PhoneThread::run()
 
 	uag_event_register(eventHandler, this);
 
-	if (m->account.server.isEmpty()) {
+	if (m->settings.account.server.isEmpty()) {
 		// nop
 	} else {
 		QString aor = "<sip:%1@%2;transport=udp>;auth_user=%4;outbound1=%5;audio_codecs=PCMU/8000/1,PCMA/8000/1";
 		aor = aor
-				.arg(m->account.phone_number)
-				.arg(makeServerAddress(m->account))
-				.arg(m->account.user)
-				.arg(QString("sip:%1:%2").arg(m->server_ip_address).arg(m->account.port))
+				.arg(m->settings.account.phone_number)
+				.arg(makeServerAddress(m->settings.account))
+				.arg(m->settings.account.user)
+				.arg(QString("sip:%1:%2").arg(m->server_ip_address).arg(m->settings.account.port))
 				;
 		ua_init(uaName(), false, true, true, true, false);
-		ua_alloc((struct ua **)&m->ua, aor.toLatin1(), m->account.password.toLatin1(), m->account.phone_number.toLatin1());
+		ua_alloc((struct ua **)&m->ua, aor.toLatin1(), m->settings.account.password.toLatin1(), m->settings.account.phone_number.toLatin1());
 	}
 	setState(PhoneState::Idle);
 

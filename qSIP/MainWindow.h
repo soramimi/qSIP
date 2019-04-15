@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include "Account.h"
 
+class ApplicationSettings;
+
 namespace Ui {
 class MainWindow;
 }
@@ -21,7 +23,7 @@ public:
 
 	QString statusText() const;
 	void setStatusText(const QString &text);
-	void reregister(const SIP::Account &a);
+	void reregister(const ApplicationSettings &a);
 	void reregister();
 private slots:
 	void on_action_settings_triggered();

@@ -29,6 +29,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 		ui->treeWidget->addTopLevelItem(item);
 	};
 	AddPage(tr("Account"), ui->page_account);
+	AddPage(tr("Audio Device"), ui->page_audio_device);
 
 	ui->treeWidget->setCurrentItem(ui->treeWidget->topLevelItem(page_number));
 }
@@ -38,41 +39,81 @@ SettingsDialog::~SettingsDialog()
 	delete ui;
 }
 
+namespace {
+
+template <typename T> class GetValue {
+private:
+public:
+	MySettings &settings;
+	QString name;
+	GetValue(MySettings &s, QString const &name)
+		: settings(s)
+		, name(name)
+	{
+	}
+	void operator >> (T &value)
+	{
+		value = settings.value(name, value).template value<T>();
+	}
+};
+
+template <typename T> class SetValue {
+private:
+public:
+	MySettings &settings;
+	QString name;
+	SetValue(MySettings &s, QString const &name)
+		: settings(s)
+		, name(name)
+	{
+	}
+	void operator << (T const &value)
+	{
+		settings.setValue(name, value);
+	}
+};
+
+} // namespace
+
 void SettingsDialog::loadSettings(ApplicationSettings *as)
 {
 	MySettings s;
 
-//	s.beginGroup("Global");
-//	s.endGroup();
-
 	s.beginGroup("Account");
-	as->account.phone_number = s.value("PhoneNumber").toString();
-	as->account.server = s.value("Server").toString();
-	as->account.port = s.value("Port").toInt();
-	as->account.service_domain = s.value("ServiceDomain").toString();
-	as->account.user = s.value("User").toString();
-	as->account.password = s.value("Password").toString();
+	GetValue<QString>(s, "PhoneNumber")                                >> as->account.phone_number;
+	GetValue<QString>(s, "Server")                                     >> as->account.server;
+	GetValue<int>(s, "Port")                                           >> as->account.port;
+	GetValue<QString>(s, "ServiceDomain")                              >> as->account.service_domain;
+	GetValue<QString>(s, "User")                                       >> as->account.user;
+	GetValue<QString>(s, "Password")                                   >> as->account.password;
 	s.endGroup();
 
 	if (as->account.port < 1 || as->account.port > 65535) {
 		as->account.port = 5060;
 	}
+
+	s.beginGroup("AudioDevice");
+	GetValue<QString>(s, "Input")                                      >> as->audio_input;
+	GetValue<QString>(s, "Output")                                     >> as->audio_output;
+	s.endGroup();
 }
 
-void SettingsDialog::saveSettings()
+void SettingsDialog::saveSettings(ApplicationSettings *as)
 {
 	MySettings s;
 
-//	s.beginGroup("Global");
-//	s.endGroup();
-
 	s.beginGroup("Account");
-	s.setValue("PhoneNumber", set.account.phone_number);
-	s.setValue("Server", set.account.server);
-	s.setValue("Port", set.account.port);
-	s.setValue("ServiceDomain", set.account.service_domain);
-	s.setValue("User", set.account.user);
-	s.setValue("Password", set.account.password);
+	SetValue<QString>(s, "PhoneNumber")                                << as->account.phone_number;
+	SetValue<QString>(s, "Server")                                     << as->account.server;
+	SetValue<int>(s, "Port")                                           << as->account.port;
+	SetValue<QString>(s, "ServiceDomain")                              << as->account.service_domain;
+	SetValue<QString>(s, "User")                                       << as->account.user;
+	SetValue<QString>(s, "Password")                                   << as->account.password;
+	s.endGroup();
+
+	s.beginGroup("AudioDevice");
+	SetValue<QString>(s, "Input")                                      << as->audio_input;
+	SetValue<QString>(s, "Output")                                     << as->audio_output;
 	s.endGroup();
 }
 
@@ -99,7 +140,7 @@ void SettingsDialog::done(int r)
 void SettingsDialog::accept()
 {
 	exchange(true);
-	saveSettings();
+	saveSettings(&set);
 	done(QDialog::Accepted);
 }
 

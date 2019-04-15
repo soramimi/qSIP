@@ -13,6 +13,8 @@ extern QString application_data_dir;
 
 struct ApplicationSettings {
 	SIP::Account account;
+	QString audio_input;
+	QString audio_output;
 };
 
 #endif // MAIN_H

@@ -41,7 +41,8 @@ SOURCES += \
     qSIP/StatusLabel.cpp \
 	qSIP/PhoneWidget.cpp \
 	qSIP/ClearButton.cpp \
-    qSIP/Network.cpp
+    qSIP/Network.cpp \
+    qSIP/SettingAudioDeviceForm.cpp
 
 HEADERS += \
 	qSIP/MainWindow.h \
@@ -57,13 +58,15 @@ HEADERS += \
     qSIP/StatusLabel.h \
 	qSIP/PhoneWidget.h \
 	qSIP/ClearButton.h \
-    qSIP/Network.h
+    qSIP/Network.h \
+    qSIP/SettingAudioDeviceForm.h
 
 FORMS += \
 	qSIP/MainWindow.ui \
     qSIP/SettingsDialog.ui \
 	qSIP/SettingAccountForm.ui \
-	qSIP/PhoneWidget.ui
+	qSIP/PhoneWidget.ui \
+    qSIP/SettingAudioDeviceForm.ui
 
 RESOURCES += \
     qSIP/resources.qrc
