@@ -1,9 +1,15 @@
 # qSIP
-VoIP/SIP client (softphone) for Windows
+VoIP/SIP client (softphone)
 
 This program was created based on <a href="http://tomeko.net/software/SIPclient/">tSIP</a>.
 
 The original tSIP was created with Borland's development environment, Instead, this program used Microsoft's compiler and Qt 5.
+
+## Platforms
+
+- Windows
+- Linux
+- macOS
 
 ## Build
 
@@ -27,5 +33,6 @@ These are distributed under BSD-like license or public domain. For details, plea
 
 - qSIP
 
-The qSIP application is linking with Qt GUI framework library. This program is distributed under LGPL. It can also be modified and used for commercial purposes.
+The source code of qSIP is distributed under MIT license.
+However, executable program linked with Qt is applied LGPL license.
 

@@ -75,6 +75,8 @@ struct PhoneThread::Private {
 	std::shared_ptr<QAudioOutput> audio_output;
 	QIODevice *audio_input_device = nullptr;
 	QIODevice *audio_output_device = nullptr;
+	char audio_input_buffer[8192];
+	int audio_input_length = 0;
 
 	int dtmf_value = 0;
 	int dtmf_count = 0;
@@ -203,12 +205,19 @@ int PhoneThread::input(char *ptr, int len)
 			len = 0;
 		}
 	} else {
+		int n = 320;
+		if (m->audio_input_length > n) {
+			memmove(m->audio_input_buffer, m->audio_input_buffer + m->audio_input_length - n, n);
+			m->audio_input_length = n;
+		}
 		if (audioInput() && audioInputDevice()) {
-			if (audioInput()->bytesReady() < len) {
-				len = 0;
-			} else {
-				len = audioInputDevice()->read(ptr, len);
-			}
+			n = audioInputDevice()->read(m->audio_input_buffer + m->audio_input_length, 4096);
+			m->audio_input_length += n;
+		}
+		if (m->audio_input_length >= len) {
+			memcpy(ptr, m->audio_input_buffer, len);
+			m->audio_input_length -= len;
+			memmove(m->audio_input_buffer, m->audio_input_buffer + len, m->audio_input_length);
 		} else {
 			len = 0;
 		}
