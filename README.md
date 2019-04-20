@@ -13,7 +13,7 @@ The original tSIP was created with Borland's development environment, Instead, t
 
 ![Windows](https://soramimi.github.io/qSIP/windows.png)
 ![macOS](https://soramimi.github.io/qSIP/macos.png)
-![Linux](https://soramimi.github.io/qSIP/linus.png)
+![Linux](https://soramimi.github.io/qSIP/linux.png)
 
 ## Build
 
