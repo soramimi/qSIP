@@ -10,6 +10,7 @@
 #include <QString>
 #include <QStringList>
 #include <stdint.h>
+#include <sys/socket.h>
 
 Network::Network()
 {
