@@ -223,7 +223,7 @@ static void invite_response(struct sip_ctrans *ct, const struct sip_msg *msg, vo
 	case PROCEEDING:
 		if (msg->scode < 200) {
 			ct->state = PROCEEDING;
-			ct->resph(0, msg, ct->arg, NULL);
+			ct->resph(0, msg, ct->arg, user_data);
 		}
 		else if (msg->scode < 300) {
 			ct->resph(0, msg, ct->arg, user_data);

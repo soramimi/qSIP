@@ -213,6 +213,7 @@ int PhoneThread::input(char *ptr, int len)
 		if (audioInput() && audioInputDevice()) {
 			n = audioInputDevice()->read(m->audio_input_buffer + m->audio_input_length, 4096);
 			m->audio_input_length += n;
+			qDebug() << n;
 		}
 		if (m->audio_input_length >= len) {
 			memcpy(ptr, m->audio_input_buffer, len);
@@ -339,6 +340,7 @@ bool PhoneThread::isEndOfVoice() const
 
 void PhoneThread::clearPeerUser()
 {
+	m->user_extra_data = {};
 	m->peer_number = QString();
 }
 

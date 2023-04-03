@@ -142,7 +142,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg, void
 		}
 
 		if (req->resph)
-			req->resph(err, msg, req->arg, NULL);
+			req->resph(err, msg, req->arg, user_data);
 
 		return;
 	}

@@ -41,7 +41,7 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg, v
 		goto out;
 
 	if (msg->scode < 200) {
-		sess->progrh(msg, sess->arg);
+		sess->progrh(msg, sess->arg, user_data);
 		return;
 	}
 	else if (msg->scode < 300) {

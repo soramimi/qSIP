@@ -115,7 +115,7 @@ static void set_state(struct call *call, enum state st)
 }
 
 
-static void call_stream_start(struct call *call, bool active)
+static void call_stream_start(struct call *call, bool active, void *user_data)
 {
 	const struct sdp_format *sc;
 	int err;
@@ -126,12 +126,12 @@ static void call_stream_start(struct call *call, bool active)
 		struct aucodec *ac = sc->data;
 
 		if (ac) {
-			err  = audio_encoder_set(call->audio, sc->data, sc->pt, sc->params, NULL);
+			err  = audio_encoder_set(call->audio, sc->data, sc->pt, sc->params, user_data);
 			if (err) {
 				DEBUG_WARNING("call: start:"
 					" audio_encoder_set error: %m\n", err);
 			}
-			err |= audio_decoder_set(call->audio, sc->data, sc->pt, sc->params, NULL);
+			err |= audio_decoder_set(call->audio, sc->data, sc->pt, sc->params, user_data);
 			if (err) {
 				DEBUG_WARNING("call: start:"
 					" audio_decoder_set error: %m\n", err);
@@ -709,7 +709,7 @@ int call_progress(struct call *call)
 			       desc, "Allow: %s\r\n", uag_allowed_methods());
 
 	if (!err)
-		call_stream_start(call, false);
+		call_stream_start(call, false, NULL);
 
 	mem_deref(desc);
 
@@ -1056,7 +1056,7 @@ static void sipsess_estab_handler(const struct sip_msg *msg, void *arg)
 
 	set_state(call, STATE_ESTABLISHED);
 
-	call_stream_start(call, true);
+	call_stream_start(call, true, NULL);
 
 	if (call->rtp_timeout_ms) {
 
@@ -1335,7 +1335,7 @@ int call_accept(struct call *call, struct sipsess_sock *sess_sock,
 }
 
 
-static void sipsess_progr_handler(const struct sip_msg *msg, void *arg)
+static void sipsess_progr_handler(const struct sip_msg *msg, void *arg, void *user_data)
 {
 	struct call *call = arg;
 	bool media;
@@ -1391,7 +1391,7 @@ static void sipsess_progr_handler(const struct sip_msg *msg, void *arg)
 	call_stream_stop(call);
 
 	if (media)
-		call_stream_start(call, false);
+		call_stream_start(call, false, user_data);
 }
 
 
