@@ -53,6 +53,17 @@
 #define WEBRTC_ARCH_32_BITS
 #define WEBRTC_ARCH_LITTLE_ENDIAN
 #define WEBRTC_LITTLE_ENDIAN
+#elif defined(__aarch64__)
+// TODO(andrew): We'd prefer to control platform defines here, but this is
+// currently provided by the Android makefiles. Commented to avoid duplicate
+// definition warnings.
+//#define WEBRTC_ARCH_ARM
+// TODO(andrew): Chromium uses the following two defines. Should we switch?
+//#define WEBRTC_ARCH_ARM_FAMILY
+//#define WEBRTC_ARCH_ARMEL
+#define WEBRTC_ARCH_64_BITS
+#define WEBRTC_ARCH_LITTLE_ENDIAN
+#define WEBRTC_LITTLE_ENDIAN
 #else
 #error Please add support for your architecture in typedefs.h
 #endif
