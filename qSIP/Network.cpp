@@ -5,12 +5,12 @@
 #else
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 #endif
 
 #include <QString>
 #include <QStringList>
 #include <stdint.h>
-#include <sys/socket.h>
 
 Network::Network()
 {

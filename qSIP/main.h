@@ -11,7 +11,8 @@
 
 extern QString application_data_dir;
 
-struct ApplicationSettings {
+class ApplicationSettings {
+public:
 	SIP::Account account;
 	QString audio_input;
 	QString audio_output;
